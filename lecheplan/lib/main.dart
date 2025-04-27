@@ -29,7 +29,7 @@ class MyApp extends StatelessWidget {
   Widget build(BuildContext context) {
     return MaterialApp.router
     (
-      title: 'BondLy',
+      title: 'lecheplan',
       theme: ThemeData(
         fontFamily: 'Quicksand'
       ),

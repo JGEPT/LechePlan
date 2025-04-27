@@ -6,6 +6,7 @@ import 'package:lecheplan/providers/theme_provider.dart';
 //widget imports
 import 'package:lecheplan/widgets/custom_filledbutton.dart';
 import 'package:lecheplan/widgets/custom_filledinputfield.dart';
+import 'package:lecheplan/widgets/custom_filledpasswordfield.dart';
 
 class LoginPage extends StatelessWidget {
   const LoginPage({super.key});
@@ -57,7 +58,7 @@ class LoginPage extends StatelessWidget {
                       labelText: "Email or Username",
                       labelFontColor: darktextColor,
                     ),
-                    CustomFilledInputField(
+                    CustomFilledPasswordField(
                       inputFontColor: darktextColor,
                       fillColor: lightAccentColor,
                       labelText: "Password",
