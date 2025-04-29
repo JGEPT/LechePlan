@@ -46,7 +46,7 @@ class _CustomFilledInputFieldState extends State<CustomFilledInputField> {
             labelStyle: TextStyle(
               fontFamily: 'Quicksand',
               fontWeight: FontWeight.w600,
-              color: darktextColor.withValues(alpha: (255 * 0.1)),
+              color: darktextColor.withValues(alpha: (255 * 0.05)),
               fontSize: 15
             ),
 

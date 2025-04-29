@@ -5,6 +5,7 @@ import 'package:go_router/go_router.dart';
 import 'package:lecheplan/screens/startSetup/landingpage.dart';
 import 'package:lecheplan/screens/startSetup/signuppage.dart';
 import 'package:lecheplan/screens/startSetup/loginpage.dart';
+import 'package:lecheplan/screens/startSetup/createprofilepage.dart';
 
 void main() {
   runApp(
@@ -16,11 +17,11 @@ class MyApp extends StatelessWidget {
   MyApp({super.key});
 
   final GoRouter _router = GoRouter(
-    routes: [
-      //please rename home to landingpage
+    routes: [      
       GoRoute(path: '/', builder: (context, state) => LandingPage()), 
       GoRoute(path: '/signup', builder: (context, state) => SignUpPage()), 
       GoRoute(path: '/login', builder: (context, state) => LoginPage()), 
+      GoRoute(path: '/createprofile', builder: (context, state) => Createprofilepage()), 
     ],
   );
 
