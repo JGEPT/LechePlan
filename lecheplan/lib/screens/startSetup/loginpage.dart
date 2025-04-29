@@ -7,6 +7,7 @@ import 'package:lecheplan/providers/theme_provider.dart';
 import 'package:lecheplan/widgets/custom_filledbutton.dart';
 import 'package:lecheplan/widgets/custom_filledinputfield.dart';
 import 'package:lecheplan/widgets/custom_filledpasswordfield.dart';
+import 'package:lecheplan/widgets/custom_backButton.dart';
 
 class LoginPage extends StatelessWidget {
   const LoginPage({super.key});
@@ -16,68 +17,73 @@ class LoginPage extends StatelessWidget {
     return Scaffold(
       body: Container(
         width: double.infinity,
-        padding: EdgeInsets.only(top: 20, bottom: 20, right: 40, left: 40),
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          crossAxisAlignment: CrossAxisAlignment.center,
-
+        padding: EdgeInsets.only(top: 40, bottom: 20, right: 40, left: 40),
+        child: Stack(
           children: [
+            Custombackbutton(destinationString: '/'),
+
             Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              crossAxisAlignment: CrossAxisAlignment.center,
               children: [
-                Text(
-                  "Login",
-                  style: TextStyle(
-                    fontWeight: FontWeight.w700,
-                    fontSize: 30,
-                    height: 1.0,
-                    color: orangeAccentColor,
-                  ),
-                ),
-
-                SizedBox(height: 20),
-
-                Text(
-                  "Welcome back! Let’s whip up\nsome more sweet plans.",
-                  textAlign: TextAlign.center,
-                  style: TextStyle(
-                    fontSize: 16,
-                    fontWeight: FontWeight.w600,
-                    color: darktextColor.withValues(alpha: (255 * 0.05)),
-                    height: 1.0,
-                  ),
-                ),
-
-                SizedBox(height: 50),
-
                 Column(
-                  spacing: 15,
                   children: [
-                    CustomFilledInputField(
-                      inputFontColor: darktextColor,
-                      fillColor: lightAccentColor,
-                      labelText: "Email or Username",
-                      labelFontColor: darktextColor,
+                    Text(
+                      "Login",
+                      style: TextStyle(
+                        fontWeight: FontWeight.w700,
+                        fontSize: 30,
+                        height: 1.0,
+                        color: orangeAccentColor,
+                      ),
                     ),
-                    CustomFilledPasswordField(
-                      inputFontColor: darktextColor,
-                      fillColor: lightAccentColor,
-                      labelText: "Password",
-                      labelFontColor: darktextColor,
+            
+                    SizedBox(height: 20),
+            
+                    Text(
+                      "Welcome back! Let’s whip up\nsome more sweet plans.",
+                      textAlign: TextAlign.center,
+                      style: TextStyle(
+                        fontSize: 16,
+                        fontWeight: FontWeight.w600,
+                        color: darktextColor.withValues(alpha: (255 * 0.05)),
+                        height: 1.0,
+                      ),
                     ),
+            
+                    SizedBox(height: 50),
+            
+                    Column(
+                      spacing: 15,
+                      children: [
+                        CustomFilledInputField(
+                          inputFontColor: darktextColor,
+                          fillColor: lightAccentColor,
+                          labelText: "Email or Username",
+                          labelFontColor: darktextColor,
+                        ),
+                        CustomFilledPasswordField(
+                          inputFontColor: darktextColor,
+                          fillColor: lightAccentColor,
+                          labelText: "Password",
+                          labelFontColor: darktextColor,
+                        ),
+                      ],
+                    ),
+            
+                    SizedBox(height: 50),
+                    
+                    FilledButtonDefault(
+                      buttonHeight: 50,
+                      buttonLabel: "Log In",
+                      pressAction: () {context.go('/');},
+                    ),
+            
+                    SizedBox(height: 30),
+                  
+                    loginRichText(context),
                   ],
                 ),
-
-                SizedBox(height: 50),
-                
-                FilledButtonDefault(
-                  buttonHeight: 50,
-                  buttonLabel: "Log In",
-                  pressAction: () {context.go('/');},
-                ),
-
-                SizedBox(height: 30),
-              
-                loginRichText(context),
               ],
             ),
           ],
