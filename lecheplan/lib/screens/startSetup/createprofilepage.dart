@@ -21,18 +21,18 @@ class _CreateProfilePageState extends State<Createprofilepage> {
         color: pinkishBackgroundColor,
         width: double.infinity,
         padding: EdgeInsets.all(40),
-      
+
         child: Stack(
           children: [
-           //main content 
+            //main content
             Column(
               mainAxisAlignment: MainAxisAlignment.start,
               crossAxisAlignment: CrossAxisAlignment.center,
               children: [
                 headerText(), //header and subheader
-                  
+
                 const SizedBox(height: 25),
-                  
+
                 mainInputContents(),
               ],
             ),
@@ -44,7 +44,7 @@ class _CreateProfilePageState extends State<Createprofilepage> {
                 buttonHeight: 50,
                 buttonLabel: "Done!",
                 pressAction: () {
-                  context.go('/');
+                  context.go('/aboutyou');
                 },
               ),
             ),
@@ -57,7 +57,10 @@ class _CreateProfilePageState extends State<Createprofilepage> {
   Column mainInputContents() {
     return Column(
       children: [
-        CircleAvatar(backgroundColor: lightAccentColor, radius: 60),
+        CircleAvatar(
+          backgroundImage: AssetImage('assets/images/sampleAvatar.jpg'),
+          radius: 60,
+        ),
 
         const SizedBox(height: 25),
 

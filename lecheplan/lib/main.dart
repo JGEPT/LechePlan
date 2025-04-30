@@ -6,6 +6,8 @@ import 'package:lecheplan/screens/startSetup/landingpage.dart';
 import 'package:lecheplan/screens/startSetup/signuppage.dart';
 import 'package:lecheplan/screens/startSetup/loginpage.dart';
 import 'package:lecheplan/screens/startSetup/createprofilepage.dart';
+import 'package:lecheplan/screens/startSetup/aboutyoupage.dart';
+import 'package:lecheplan/screens/mainPages/mainhubpage.dart';
 
 void main() {
   runApp(
@@ -22,6 +24,9 @@ class MyApp extends StatelessWidget {
       GoRoute(path: '/signup', builder: (context, state) => SignUpPage()), 
       GoRoute(path: '/login', builder: (context, state) => LoginPage()), 
       GoRoute(path: '/createprofile', builder: (context, state) => Createprofilepage()), 
+      GoRoute(path: '/aboutyou', builder: (context, state) => Aboutyoupage()), 
+      GoRoute(path: '/mainhub', builder: (context, state) => Mainhubpage()), 
+  
     ],
   );
 
