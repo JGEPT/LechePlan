@@ -2,8 +2,12 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:lecheplan/providers/theme_provider.dart';
 
+//model imports
+import 'package:lecheplan/models/interestoptions.dart';
+
 //widget imports
-import 'package:lecheplan/widgets/custom_filledbutton.dart';
+import 'package:lecheplan/widgets/reusableWidgets/custom_filledbutton.dart';
+import 'package:lecheplan/widgets/modelWidgets/interests_pill.dart';
 
 class Aboutyoupage extends StatefulWidget {
   const Aboutyoupage({super.key});
@@ -15,38 +19,106 @@ class Aboutyoupage extends StatefulWidget {
 class _AboutyoupageState extends State<Aboutyoupage> {
   @override
   Widget build(BuildContext context) {
-    return Scaffold(      
+    return Scaffold(
       body: Container(
         color: pinkishBackgroundColor,
         width: double.infinity,
         padding: EdgeInsets.all(40),
-      
         child: Stack(
           children: [
-           //main content 
+            //main content
             Center(
-              child: Column(              
+              child: Column(
                 mainAxisAlignment: MainAxisAlignment.start,
                 crossAxisAlignment: CrossAxisAlignment.center,
                 children: [
-                  headerText(), //header and subheader                                  
-                ],
-              ),
-            ),
+                  headerText(), //header and subheader
 
-            //button
-            Align(
-              alignment: Alignment.bottomCenter,
-              child: FilledButtonDefault(
-                buttonHeight: 50,
-                buttonLabel: "Done!",
-                pressAction: () {
-                  context.go('/mainhub');
-                },
+                  const SizedBox(height: 10),
+
+                  //list of pills
+                  listofPills(),
+
+                  //button
+                  SafeArea(
+                    bottom: false,
+                    child: Align(
+                      alignment: Alignment.bottomCenter,
+                      child: FilledButtonDefault(
+                        buttonHeight: 50,
+                        buttonLabel: "Done!",
+                        pressAction: () {
+                          context.go('/mainhub');
+                        },
+                      ),
+                    ),
+                  ),
+                ],
               ),
             ),
           ],
         ),
+      ),
+    );
+  }
+
+  Expanded listofPills() {
+    return Expanded(
+      child: Stack(
+        children: [
+          SingleChildScrollView(
+            padding: EdgeInsets.symmetric(vertical: 20),
+            child: Wrap(
+              spacing: 5,
+              runSpacing: 7,
+              alignment: WrapAlignment.center,
+              children:
+                  interestsAndHobbies
+                      .map((interest) => InterestsPill(item: interest))
+                      .toList(),
+            ),
+          ),
+
+          //top fade for scroll
+          Align(
+            alignment: Alignment.topCenter,
+            child: IgnorePointer(
+              child: Container(
+                height: 10,
+                decoration: BoxDecoration(
+                  gradient: LinearGradient(
+                    begin: Alignment.topCenter,
+                    end: Alignment.bottomCenter,
+                    colors: [
+                      pinkishBackgroundColor,
+                      pinkishBackgroundColor.withAlpha(0),
+                    ],
+                  ),
+                ),
+              ),
+            ),
+          ),
+
+          //bottom fade for scroll
+          Align(
+            alignment: Alignment.bottomCenter,
+            child: IgnorePointer(
+              child: Container(
+                height: 10,
+                decoration: BoxDecoration(
+                  gradient: LinearGradient(
+                    begin: Alignment.topCenter,
+                    end: Alignment.bottomCenter,
+                    colors: [
+                      pinkishBackgroundColor.withAlpha(0),
+                      pinkishBackgroundColor,
+                    ],
+                  ),
+                ),
+              ),
+            ),
+          ),
+        ],
       ),
     );
   }
@@ -80,7 +152,7 @@ class _AboutyoupageState extends State<Aboutyoupage> {
               ),
               children: [
                 TextSpan(
-                  text: "Share  ",
+                  text: "Share ",
                   style: TextStyle(color: orangeAccentColor),
                 ),
 

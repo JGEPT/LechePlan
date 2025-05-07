@@ -1,7 +1,22 @@
+import 'dart:convert';
+import 'dart:io';
+
 import 'package:flutter/material.dart';
-import 'package:flutter/gestures.dart';
-import 'package:go_router/go_router.dart';
 import 'package:lecheplan/providers/theme_provider.dart';
+import 'package:flutter/services.dart' show rootBundle;
+
+//model imports
+import 'package:lecheplan/models/plan_model.dart';
+
+//widget imports
+import 'package:lecheplan/widgets/modelWidgets/upcomingplans_card.dart';
+
+//load json file contents 
+Future<void> loadJsonAsset() async { 
+  final String jsonString = await rootBundle.loadString('assets/plans.json'); 
+  final data = jsonDecode(jsonString); 
+}
+
 
 class HomePage extends StatelessWidget {
   const HomePage({super.key});
@@ -27,10 +42,34 @@ class HomePage extends StatelessWidget {
                   ),
                   color: pinkishBackgroundColor,
                 ),
-                child: SingleChildScrollView(child: Column(children: [
-                      
+                child: SingleChildScrollView(
+                  child: Column(
+                    children: [
+                      Container(
+                        padding: EdgeInsets.all(20),
+                        child: Column(
+                          mainAxisSize: MainAxisSize.max,
+                          children: [
+                            //coming up header
+                            Align(
+                              alignment: Alignment.centerLeft,
+                              child: Text(
+                                'Coming Up',
+                                style: TextStyle(
+                                  color: darktextColor.withValues(
+                                    alpha: (255 * 0.2),
+                                  ),
+                                  fontSize: 25,
+                                  fontWeight: FontWeight.w700,
+                                ),
+                              ),
+                            ),                            
+                          ],
+                        ),
+                      ),
                     ],
-                  )),
+                  ),
+                ),
               ),
             ),
           ],

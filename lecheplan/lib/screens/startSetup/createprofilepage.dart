@@ -3,8 +3,8 @@ import 'package:go_router/go_router.dart';
 import 'package:lecheplan/providers/theme_provider.dart';
 
 //widget imports
-import 'package:lecheplan/widgets/custom_filledinputfield.dart';
-import 'package:lecheplan/widgets/custom_filledbutton.dart';
+import 'package:lecheplan/widgets/reusableWidgets/custom_filledinputfield.dart';
+import 'package:lecheplan/widgets/reusableWidgets/custom_filledbutton.dart';
 
 class Createprofilepage extends StatefulWidget {
   const Createprofilepage({super.key});
@@ -42,7 +42,7 @@ class _CreateProfilePageState extends State<Createprofilepage> {
               alignment: Alignment.bottomCenter,
               child: FilledButtonDefault(
                 buttonHeight: 50,
-                buttonLabel: "Done!",
+                buttonLabel: "Next",
                 pressAction: () {
                   context.go('/aboutyou');
                 },
