@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:go_router/go_router.dart';
 import 'package:lecheplan/providers/theme_provider.dart';
 
 //widget imports
@@ -51,7 +50,7 @@ class _MainhubpageState extends State<Mainhubpage> {
           alignment: Alignment.bottomCenter,
           child: BottomNavigationBar(        
             selectedItemColor: orangeAccentColor,
-            unselectedItemColor: darktextColor.withValues(alpha: (255 * 0.05)),
+            unselectedItemColor: unselectedGreyColor.withAlpha(180),
             selectedLabelStyle: TextStyle(fontFamily: 'Quicksand', fontWeight: FontWeight.w700),
             unselectedLabelStyle: TextStyle(fontFamily: 'Quicksand', fontWeight: FontWeight.w600),
 

@@ -26,24 +26,21 @@ class _InterestsPillState extends State<InterestsPill> {
   Widget build(BuildContext context){
     return GestureDetector( //makes sure that something happens when it is pressed.
       onTap: toggleSelection,
-      child: Container(
-        alignment: Alignment.center,
-        height: 35,
-        width: widget.item.length * 12,
-        decoration: BoxDecoration(
-          color: isSelected ? orangeAccentColor : greyAccentColor,
-          borderRadius: BorderRadius.circular(99),
-          border: Border.all(
-            color: lightGreyColor,
-            width: isSelected ? 0 : 1.5,
+      child: IntrinsicWidth( //makes sure it onlky takes up as much as it needs
+        child: Container(
+          alignment: Alignment.center,
+          padding: EdgeInsets.symmetric(horizontal: 20, vertical: 3),
+          decoration: BoxDecoration(
+            color: isSelected ? orangeAccentColor : greyAccentColor,
+            borderRadius: BorderRadius.circular(99),           
           ),
-        ),
-        child: Text(
-          widget.item,
-          style: TextStyle(
-            color: isSelected? lighttextColor : darktextColor.withAlpha(200),
-            fontWeight: FontWeight.w700,
-            fontSize: 15,
+          child: Text(
+            widget.item,
+            style: TextStyle(
+              color: isSelected? lighttextColor : darktextColor.withAlpha(200),
+              fontWeight: FontWeight.w700,
+              fontSize: 15,
+            ),
           ),
         ),
       ),

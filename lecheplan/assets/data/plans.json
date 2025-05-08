@@ -1,7 +1,7 @@
 [
     {
       "planID": "plan_00001",
-      "title": "Morning Jog w/ Frens",
+      "title": "Morning Jog w/ Frens",      
       "category": "Health & Fitness",
       "planDateTime": "2025-05-08T06:30:00Z",
       "participants": ["Wiwiwi", "SampleName2", "Group1"],
