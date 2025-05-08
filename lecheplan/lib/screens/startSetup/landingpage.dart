@@ -4,7 +4,7 @@ import 'package:go_router/go_router.dart';
 import 'package:lecheplan/providers/theme_provider.dart';
 
 //widget imports
-import 'package:lecheplan/widgets/custom_filledbutton.dart';
+import 'package:lecheplan/widgets/reusableWidgets/custom_filledbutton.dart';
 
 class LandingPage extends StatelessWidget {
   const LandingPage({super.key});

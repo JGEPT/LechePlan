@@ -1,0 +1,27 @@
+[
+    {
+      "planID": "plan_00001",
+      "title": "Morning Jog w/ Frens",      
+      "category": "Health & Fitness",
+      "planDateTime": "2025-05-08T06:30:00Z",
+      "participants": ["Wiwiwi", "SampleName2", "Group1"],
+      "tags": ["jogging", "morning", "outdoors"]
+    },
+    {
+        "planID": "plan_00002",
+        "title": "Fyang Birthday",
+        "category": "Celebration",
+        "planDateTime": "2025-05-10T19:00:00Z",
+        "participants": ["jmfyangnatics"],
+        "tags": ["birthday", "dinner", "food"]
+    },
+    {
+      "planID": "plan_00003",
+      "title": "Study Group",
+      "category": "Academics",
+      "planDateTime": "2025-05-09T14:00:00Z",
+      "participants": ["Karl", "Inopiquez", "Constantine"],
+      "tags": []
+    }
+  ]
+  

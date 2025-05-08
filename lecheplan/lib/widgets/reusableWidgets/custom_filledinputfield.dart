@@ -1,13 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:lecheplan/providers/theme_provider.dart';
 
-class CustomFilledPasswordField extends StatefulWidget {
+class CustomFilledInputField extends StatefulWidget {
   final Color inputFontColor;
   final Color fillColor;
   final String labelText;
   final Color labelFontColor;
 
-  const CustomFilledPasswordField({
+  const CustomFilledInputField({
     super.key,
     required this.inputFontColor,
     required this.fillColor,
@@ -16,10 +16,10 @@ class CustomFilledPasswordField extends StatefulWidget {
   });
 
   @override
-  State<CustomFilledPasswordField> createState() => _CustomFilledPasswordFieldState();
+  State<CustomFilledInputField> createState() => _CustomFilledInputFieldState();
 }
 
-class _CustomFilledPasswordFieldState extends State<CustomFilledPasswordField> {
+class _CustomFilledInputFieldState extends State<CustomFilledInputField> {
   late FocusNode _focusNode;
 
   @override
@@ -40,16 +40,13 @@ class _CustomFilledPasswordFieldState extends State<CustomFilledPasswordField> {
       children: [
         TextField(
           focusNode: _focusNode,
-          obscureText: true,
-          enableSuggestions: false,
-          autocorrect: false,
           style: TextStyle(color: widget.inputFontColor),
           decoration: InputDecoration(
             labelText: widget.labelText,
             labelStyle: TextStyle(
               fontFamily: 'Quicksand',
               fontWeight: FontWeight.w600,
-              color: darktextColor.withValues(alpha: (255 * 0.1)),
+              color: darktextColor.withAlpha(120),
               fontSize: 15
             ),
 

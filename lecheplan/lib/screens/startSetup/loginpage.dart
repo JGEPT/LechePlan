@@ -4,10 +4,10 @@ import 'package:go_router/go_router.dart';
 import 'package:lecheplan/providers/theme_provider.dart';
 
 //widget imports
-import 'package:lecheplan/widgets/custom_filledbutton.dart';
-import 'package:lecheplan/widgets/custom_filledinputfield.dart';
-import 'package:lecheplan/widgets/custom_filledpasswordfield.dart';
-import 'package:lecheplan/widgets/custom_backButton.dart';
+import 'package:lecheplan/widgets/reusableWidgets/custom_filledbutton.dart';
+import 'package:lecheplan/widgets/reusableWidgets/custom_filledinputfield.dart';
+import 'package:lecheplan/widgets/reusableWidgets/custom_filledpasswordfield.dart';
+import 'package:lecheplan/widgets/reusableWidgets/custom_backButton.dart';
 
 class LoginPage extends StatelessWidget {
   const LoginPage({super.key});
@@ -52,7 +52,8 @@ class LoginPage extends StatelessWidget {
                     ),
             
                     SizedBox(height: 50),
-            
+                    
+                    // main input fields
                     Column(
                       spacing: 15,
                       children: [
@@ -73,6 +74,7 @@ class LoginPage extends StatelessWidget {
             
                     SizedBox(height: 50),
                     
+                    //login button
                     FilledButtonDefault(
                       buttonHeight: 50,
                       buttonLabel: "Log In",
@@ -80,8 +82,9 @@ class LoginPage extends StatelessWidget {
                     ),
             
                     SizedBox(height: 30),
-                  
-                    loginRichText(context),
+
+                    //clickable login text
+                    signupRichText(context),
                   ],
                 ),
               ],
@@ -92,7 +95,7 @@ class LoginPage extends StatelessWidget {
     );
   }
 
-  RichText loginRichText(BuildContext context) {
+  RichText signupRichText(BuildContext context) {
     return RichText(              
       text: TextSpan(
         text: "Don't have an account yet? ",
