@@ -24,7 +24,7 @@ class _MainhubpageState extends State<Mainhubpage> {
   @override
   Widget build(BuildContext context) {
     // list of 
-    final List<Widget> _widgetOptions = <Widget> [
+    final List<Widget> widgetOptions = <Widget> [
       //home page
       HomePage(),
 
@@ -36,16 +36,7 @@ class _MainhubpageState extends State<Mainhubpage> {
     return Stack(
       children: [
         
-        Material(
-          color: pinkishBackgroundColor,
-          child: Container(  
-            alignment: Alignment.center,
-            width: double.infinity,
-            height: double.infinity,
-            child: _widgetOptions.elementAt(_selectedIndex)
-          ),
-        ),
-
+        _BackgroundContainer(widgetOptions: widgetOptions, selectedIndex: _selectedIndex),
         Align(
           alignment: Alignment.bottomCenter,
           child: BottomNavigationBar(        
@@ -66,10 +57,35 @@ class _MainhubpageState extends State<Mainhubpage> {
             currentIndex: _selectedIndex,
             onTap: _onItemTapped,
           ),
-        )
+        ),
+        
       ]
       
       
+    );
+  }
+}
+
+class _BackgroundContainer extends StatelessWidget {
+  const _BackgroundContainer({
+    super.key,
+    required this.widgetOptions,
+    required int selectedIndex,
+  }) : _selectedIndex = selectedIndex;
+
+  final List<Widget> widgetOptions;
+  final int _selectedIndex;
+
+  @override
+  Widget build(BuildContext context) {
+    return Material(
+      color: pinkishBackgroundColor,
+      child: Container(  
+        alignment: Alignment.center,
+        width: double.infinity,
+        height: double.infinity,
+        child: widgetOptions.elementAt(_selectedIndex)
+      ),
     );
   }
 }

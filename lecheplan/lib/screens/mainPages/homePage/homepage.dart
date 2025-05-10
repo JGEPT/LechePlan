@@ -1,6 +1,7 @@
 import 'dart:convert';
 import 'package:lecheplan/widgets/reusableWidgets/custom_icontextbutton.dart';
-import 'package:logging/logging.dart';
+import 'package:go_router/go_router.dart';
+import 'package:supabase_flutter/supabase_flutter.dart'; //for the database
 
 import 'package:flutter/material.dart';
 import 'package:lecheplan/providers/theme_provider.dart';
@@ -13,18 +14,6 @@ import 'package:lecheplan/models/plan_model.dart';
 import 'package:lecheplan/widgets/modelWidgets/upcomingplans_card.dart';
 import 'package:lecheplan/widgets/reusableWidgets/custom_filledbutton.dart';
 
-final Logger _homepageLogger = Logger('homePageLogger');
-
-Future<List<Plan>> loadPlans() async {
-  final String jsonString = await rootBundle.loadString(
-    'assets/data/plans.json',
-  );
-  final data = jsonDecode(jsonString);
-
-  //convert the List<dynamic> to a List<Plan> and return
-  return List<Plan>.from(data.map((json) => Plan.fromJson(json)));
-}
-
 class HomePage extends StatefulWidget {
   const HomePage({super.key});
 
@@ -33,42 +22,121 @@ class HomePage extends StatefulWidget {
 }
 
 class _HomePageState extends State<HomePage> {
-  List<Plan> plans = []; //initialize plans as an empty list
+  List<Plan> plans = [];
+  List<Map<String, dynamic>> upcomingPlans = [];
+  bool isLoading = true;
 
   @override
   void initState() {
     super.initState();
-    loadPlans().then((loadedPlans) {
-      _homepageLogger.info('Loaded Plans: ${loadedPlans.length}');
-      loadedPlans.sort((a, b) => a.planDateTime.compareTo(b.planDateTime));
-      setState(() {
-        plans = loadedPlans;
-      });
-    });
   }
 
   @override
   Widget build(BuildContext context) {
-    return SafeArea(
-      child: Container(
-        decoration: BoxDecoration(gradient: orangeGradient),
-        child: Column(
-          children: [
-            // header - greeting, notifs, and avatar
-            headerContent(),
-
-            //white body container - contains the main stuff
-            mainContainer(),
-          ],
-        ),
+    return Container(
+      decoration: BoxDecoration(gradient: orangeGradient),
+      child: Column(
+        children: [
+          const _HeaderContent(),
+          _MainContainer(
+            isLoading: isLoading,
+            upcomingPlans: upcomingPlans,
+          ),
+        ],
       ),
     );
   }
+}
 
-  Expanded mainContainer() {
+class _HeaderContent extends StatelessWidget {
+  const _HeaderContent();
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.only(left: 20, right: 20, top: 40, bottom: 20),
+      color: Colors.transparent,
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        children: [
+          const _GreetingText(),
+          const _NotificationAndAvatar(),
+        ],
+      ),
+    );
+  }
+}
+
+class _GreetingText extends StatelessWidget {
+  const _GreetingText();
+
+  @override
+  Widget build(BuildContext context) {
+    return Column(
+      mainAxisAlignment: MainAxisAlignment.start,
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          "Hello, Username!",
+          style: TextStyle(
+            color: lighttextColor,
+            fontSize: 25,
+            fontWeight: FontWeight.w700,
+            height: 1,
+          ),
+        ),
+        Text(
+          "Ready to plan your next sweet activity?",
+          style: TextStyle(
+            color: lighttextColor,
+            fontSize: 13,
+            fontWeight: FontWeight.w600,
+          ),
+        ),
+      ],
+    );
+  }
+}
+
+class _NotificationAndAvatar extends StatelessWidget {
+  const _NotificationAndAvatar();
+
+  @override
+  Widget build(BuildContext context) {
+    return Row(
+      spacing: 2,
+      children: [
+        IconButton(
+          onPressed: () => context.push('/notifications'),
+          icon: Icon(
+            Icons.notifications_outlined,
+            color: Colors.white,
+            size: 35,
+          ),
+        ),
+        CircleAvatar(
+          backgroundImage: const AssetImage('assets/images/sampleAvatar.jpg'),
+          radius: 22,
+        ),
+      ],
+    );
+  }
+}
+
+class _MainContainer extends StatelessWidget {
+  final bool isLoading;
+  final List<Map<String, dynamic>> upcomingPlans;
+
+  const _MainContainer({
+    required this.isLoading,
+    required this.upcomingPlans,
+  });
+
+  @override
+  Widget build(BuildContext context) {
     return Expanded(
       child: Container(
-        padding: EdgeInsets.all(20),
+        padding: const EdgeInsets.all(20),
         width: double.infinity,
         decoration: BoxDecoration(
           borderRadius: BorderRadius.only(
@@ -79,122 +147,64 @@ class _HomePageState extends State<HomePage> {
         ),
         child: SingleChildScrollView(
           child: Column(
-            spacing: 15,
             children: [
-              //coming up items
-              comingUpSection(),
-
-              //suggested for you section
-              Column(
-                spacing: 8,
-                mainAxisSize: MainAxisSize.max,
-                children: [
-                  //coming up header
-                  Align(
-                    alignment: Alignment.centerLeft,
-                    child: Text(
-                      'Suggested For You',
-                      style: TextStyle(
-                        color: darktextColor.withValues(alpha: (255 * 0.2)),
-                        fontSize: 25,
-                        fontWeight: FontWeight.w700,
-                      ),
-                    ),
-                  ),
-
-                  //2 buttons - add peopel and activity
-                  Row(
-                    mainAxisSize: MainAxisSize.max,
-                    spacing: 8,
-                    children: [
-                      //button 1 - add people takes you to the people page (add friend or group)
-                      CustomIconTextButton(
-                        label: 'Add\nPeople',
-                        iconSize: 30,
-                        buttonIcon: Icons.group_add_outlined,
-                      ),
-                      //button 2 - add activity takes you to the plans page (add activity)
-                      CustomIconTextButton(
-                        label: 'Add\nActivity',
-                        iconSize: 30,
-                        buttonIcon: Icons.edit_calendar_outlined,
-                      ),
-                    ],
-                  ),
-
-                  //2 buttons - recommend and reload recommendation
-                  Row(
-                    mainAxisSize: MainAxisSize.max,
-                    spacing: 8,
-                    children: [
-                      CustomIconTextButton(
-                        label: 'Recommend an Activity!',
-                        iconSize: 25,
-                        buttonIcon: Icons.lightbulb_outline_rounded,
-                      ),
-
-                      //refresh button - inkwell for the funny clicky
-                      Material(
-                        color: orangeAccentColor,
-                        borderRadius: BorderRadius.circular(15),
-                        child: InkWell(
-                          onTap: () {},
-                          borderRadius: BorderRadius.circular(15),
-                          child: Container(
-                            padding: EdgeInsets.all(17),
-                            child: Icon(
-                              Icons.refresh_rounded,
-                              color: Colors.white,
-                              size: 25,
-                            ),
-                          ),
-                        ),
-                      )
-                    ],
-                  ),
-                  
-                  //bottom text 
-                  Text(
-                    'or try the recomendations below!',
-                    style: TextStyle(
-                      color: darktextColor,
-                      fontSize: 12,
-                      fontWeight: FontWeight.w600                      
-                    ),
-                  )
-
-                ],                              
-              ),
+              _ComingUpSection(upcomingPlans: upcomingPlans),
+              const _SuggestedForYouSection(),
             ],
           ),
         ),
       ),
     );
   }
+}
 
-  Column comingUpSection() {
+class _ComingUpSection extends StatelessWidget {
+  final List<Map<String, dynamic>> upcomingPlans;
+
+  const _ComingUpSection({required this.upcomingPlans});
+
+  @override
+  Widget build(BuildContext context) {
     return Column(
-      spacing: 8,
-      mainAxisSize: MainAxisSize.max,
+      crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        //coming up header
-        Align(
-          alignment: Alignment.centerLeft,
-          child: Text(
-            'Coming Up',
-            style: TextStyle(
-              color: darktextColor.withValues(alpha: (255 * 0.2)),
-              fontSize: 25,
-              fontWeight: FontWeight.w700,
-            ),
+        Text(
+          'Coming Up',
+          style: TextStyle(
+            color: darktextColor,
+            fontSize: 25,
+            fontWeight: FontWeight.w700,
           ),
         ),
-
-        //upcoming plans card - 0 and 1 since it only shows the first 2 most upcomng
-        UpcomingplansCard(currentPlan: plans[0]),
-        UpcomingplansCard(currentPlan: plans[1]),
-
-        //the see all button that will take you to the plans page
+        const SizedBox(height: 8),
+        if (upcomingPlans.isEmpty)
+          Center(
+            child: Text(
+              'No upcoming plans',
+              style: TextStyle(
+                color: darktextColor.withAlpha(200),
+                fontSize: 16,
+              ),
+            ),
+          )
+        else
+        //this is temporary just for checking if the data is loading
+          ListView.builder(
+            shrinkWrap: true,
+            physics: const NeverScrollableScrollPhysics(),
+            itemCount: upcomingPlans.length,
+            itemBuilder: (context, index) {
+              final plan = upcomingPlans[index];
+              return Padding(
+                padding: const EdgeInsets.only(bottom: 8.0),
+                child: ListTile(
+                  title: Text(plan['title'] ?? 'No title'), 
+                  subtitle: Text(plan['description'] ?? ''),
+                ),
+              );
+            },
+          ),
+        const SizedBox(height: 16),
         Customfilledbutton(
           buttonHeight: 25,
           buttonWidth: double.infinity,
@@ -202,65 +212,120 @@ class _HomePageState extends State<HomePage> {
           buttonRadius: 20,
           textColor: lighttextColor,
           buttonLabel: 'See All >',
-          pressAction: () {}, //make it go to plans page
+          pressAction: () {},
         ),
       ],
     );
   }
+}
 
-  Container headerContent() {
-    return Container(
-      padding: EdgeInsets.only(left: 20, right: 20, top: 40, bottom: 20),
-      color: Colors.transparent,
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-        children: [
-          //Greetings Text
-          Column(
-            mainAxisAlignment: MainAxisAlignment.start,
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text(
-                "Hello, Username!",
-                style: TextStyle(
-                  color: lighttextColor,
-                  fontSize: 25,
-                  fontWeight: FontWeight.w700,
-                  height: 1,
-                ),
-              ),
+class _SuggestedForYouSection extends StatelessWidget {
+  const _SuggestedForYouSection();
 
-              Text(
-                "Ready to plan your next sweet activity?",
-                style: TextStyle(
-                  color: lighttextColor,
-                  fontSize: 13,
-                  fontWeight: FontWeight.w600,
-                ),
+  @override
+  Widget build(BuildContext context) {
+    return Column(
+      spacing: 8,
+      mainAxisSize: MainAxisSize.max,
+      children: const [
+        _SectionHeader(),
+        _ActionButtons(),
+        _RecommendationButtons(),
+        _BottomText(),
+      ],
+    );
+  }
+}
+
+class _SectionHeader extends StatelessWidget {
+  const _SectionHeader();
+
+  @override
+  Widget build(BuildContext context) {
+    return Align(
+      alignment: Alignment.centerLeft,
+      child: Text(
+        'Suggested For You',
+        style: TextStyle(
+          color: darktextColor,
+          fontSize: 25,
+          fontWeight: FontWeight.w700,
+        ),
+      ),
+    );
+  }
+}
+
+class _ActionButtons extends StatelessWidget {
+  const _ActionButtons();
+
+  @override
+  Widget build(BuildContext context) {
+    return Row(
+      mainAxisSize: MainAxisSize.max,
+      spacing: 8,
+      children: [
+        CustomIconTextButton(
+          label: 'Add\nPeople',
+          iconSize: 30,
+          buttonIcon: Icons.group_add_outlined,
+        ),
+        CustomIconTextButton(
+          label: 'Add\nActivity',
+          iconSize: 30,
+          buttonIcon: Icons.edit_calendar_outlined,
+        ),
+      ],
+    );
+  }
+}
+
+class _RecommendationButtons extends StatelessWidget {
+  const _RecommendationButtons();
+
+  @override
+  Widget build(BuildContext context) {
+    return Row(
+      mainAxisSize: MainAxisSize.max,
+      spacing: 8,
+      children: [
+        CustomIconTextButton(
+          label: 'Recommend an Activity!',
+          iconSize: 25,
+          buttonIcon: Icons.lightbulb_outline_rounded,
+        ),
+        Material(
+          color: orangeAccentColor,
+          borderRadius: BorderRadius.circular(15),
+          child: InkWell(
+            onTap: () {},
+            borderRadius: BorderRadius.circular(15),
+            child: Container(
+              padding: const EdgeInsets.all(17),
+              child: const Icon(
+                Icons.refresh_rounded,
+                color: Colors.white,
+                size: 25,
               ),
-            ],
+            ),
           ),
+        ),
+      ],
+    );
+  }
+}
 
-          //notifications button
-          Row(
-            spacing: 2,
-            children: [
-              IconButton(
-                onPressed: () {},
-                icon: Icon(
-                  Icons.notifications_outlined,
-                  color: Colors.white,
-                  size: 35,
-                ),
-              ),
+class _BottomText extends StatelessWidget {
+  const _BottomText();
 
-              CircleAvatar(
-                backgroundImage: AssetImage('assets/images/sampleAvatar.jpg'),
-                radius: 22,
-              ),
-            ],
-          ),
-        ],
+  @override
+  Widget build(BuildContext context) {
+    return Text(
+      'or try the recomendations below!',
+      style: TextStyle(
+        color: darktextColor,
+        fontSize: 12,
+        fontWeight: FontWeight.w600,
       ),
     );
   }

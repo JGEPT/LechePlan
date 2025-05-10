@@ -7,7 +7,7 @@ import 'package:lecheplan/providers/theme_provider.dart';
 import 'package:lecheplan/widgets/reusableWidgets/custom_filledbutton.dart';
 import 'package:lecheplan/widgets/reusableWidgets/custom_filledinputfield.dart';
 import 'package:lecheplan/widgets/reusableWidgets/custom_filledpasswordfield.dart';
-import 'package:lecheplan/widgets/reusableWidgets/custom_backButton.dart';
+import 'package:lecheplan/widgets/reusableWidgets/custom_backbutton.dart';
 
 class LoginPage extends StatelessWidget {
   const LoginPage({super.key});
@@ -17,85 +17,126 @@ class LoginPage extends StatelessWidget {
     return Scaffold(
       body: Container(
         width: double.infinity,
-        padding: EdgeInsets.only(top: 40, bottom: 20, right: 40, left: 40),
+        padding: const EdgeInsets.only(top: 40, bottom: 20, right: 40, left: 40),
         child: Stack(
-          children: [
+          children: const [
             Custombackbutton(destinationString: '/'),
-
-            Column(
-              mainAxisAlignment: MainAxisAlignment.center,
-              crossAxisAlignment: CrossAxisAlignment.center,
-              children: [
-                Column(
-                  children: [
-                    Text(
-                      "Login",
-                      style: TextStyle(
-                        fontWeight: FontWeight.w700,
-                        fontSize: 30,
-                        height: 1.0,
-                        color: orangeAccentColor,
-                      ),
-                    ),
-            
-                    SizedBox(height: 20),
-            
-                    Text(
-                      "Welcome back! Let’s whip up\nsome more sweet plans.",
-                      textAlign: TextAlign.center,
-                      style: TextStyle(
-                        fontSize: 16,
-                        fontWeight: FontWeight.w600,
-                        color: darktextColor.withValues(alpha: (255 * 0.05)),
-                        height: 1.0,
-                      ),
-                    ),
-            
-                    SizedBox(height: 50),
-                    
-                    // main input fields
-                    Column(
-                      spacing: 15,
-                      children: [
-                        CustomFilledInputField(
-                          inputFontColor: darktextColor,
-                          fillColor: lightAccentColor,
-                          labelText: "Email or Username",
-                          labelFontColor: darktextColor,
-                        ),
-                        CustomFilledPasswordField(
-                          inputFontColor: darktextColor,
-                          fillColor: lightAccentColor,
-                          labelText: "Password",
-                          labelFontColor: darktextColor,
-                        ),
-                      ],
-                    ),
-            
-                    SizedBox(height: 50),
-                    
-                    //login button
-                    FilledButtonDefault(
-                      buttonHeight: 50,
-                      buttonLabel: "Log In",
-                      pressAction: () {context.go('/');},
-                    ),
-            
-                    SizedBox(height: 30),
-
-                    //clickable login text
-                    signupRichText(context),
-                  ],
-                ),
-              ],
-            ),
+            _LoginContent(),
           ],
         ),
       ),
     );
   }
+}
 
-  RichText signupRichText(BuildContext context) {
+//all the primary content of the page
+class _LoginContent extends StatelessWidget {
+  const _LoginContent();
+
+  @override
+  Widget build(BuildContext context) {
+    return Column(
+      mainAxisAlignment: MainAxisAlignment.center,
+      crossAxisAlignment: CrossAxisAlignment.center,
+      children: const [
+        _HeaderText(),
+        SizedBox(height: 15),
+        _SubHeaderText(),
+        SizedBox(height: 30),
+        _InputFields(),
+        SizedBox(height: 30),
+        _LoginButton(),
+        SizedBox(height: 30),
+        _SignUpRichText(),
+      ],
+    );
+  }
+}
+
+//TEXT! -------------------------------------------------------------
+class _HeaderText extends StatelessWidget {
+  const _HeaderText();
+
+  @override
+  Widget build(BuildContext context) {
+    return Text(
+      "Login",
+      style: TextStyle(
+        fontWeight: FontWeight.w700,
+        fontSize: 30,
+        height: 1.0,
+        color: orangeAccentColor,
+      ),
+    );
+  }
+}
+
+class _SubHeaderText extends StatelessWidget {
+  const _SubHeaderText();
+
+  @override
+  Widget build(BuildContext context) {
+    return Text(
+      "Welcome back! Let's whip up\nsome more sweet plans.",
+      textAlign: TextAlign.center,
+      style: TextStyle(
+        fontSize: 16,
+        fontWeight: FontWeight.w600,
+        color: darktextColor.withValues(alpha: (255 * 0.05)),
+        height: 1.0,
+      ),
+    );
+  }
+}
+//TEXT! -------------------------------------------------------------
+
+//INPUT FIELDS ------------------------------------------------------
+class _InputFields extends StatelessWidget {
+  const _InputFields();
+
+  @override
+  Widget build(BuildContext context) {
+    return Column(
+      spacing: 15,
+      children: [
+        CustomFilledInputField(
+          inputFontColor: darktextColor,
+          fillColor: lightAccentColor,
+          labelText: "Email or Username",
+          labelFontColor: darktextColor,
+        ),
+        CustomFilledPasswordField(
+          inputFontColor: darktextColor,
+          fillColor: lightAccentColor,
+          labelText: "Password",
+          labelFontColor: darktextColor,
+        ),
+      ],
+    );
+  }
+}
+
+class _LoginButton extends StatelessWidget {
+  const _LoginButton();
+
+  @override
+  Widget build(BuildContext context) {
+    return FilledButtonDefault(
+      buttonHeight: 50,
+      buttonLabel: "Log In",
+      pressAction: () => context.go('/mainhub'),
+    );
+  }
+}
+
+//INPUT FIELDS ------------------------------------------------------
+
+//pressable text using ontap recognizer yipee 
+class _SignUpRichText extends StatelessWidget {
+  const _SignUpRichText();
+
+  @override
+  Widget build(BuildContext context) {
     return RichText(              
       text: TextSpan(
         text: "Don't have an account yet? ",
@@ -105,7 +146,7 @@ class LoginPage extends StatelessWidget {
           fontSize: 16,
           fontWeight: FontWeight.w600,
         ),
-          
+
         children: [
           TextSpan(
             text: "Sign Up",                    
@@ -116,13 +157,11 @@ class LoginPage extends StatelessWidget {
               fontWeight: FontWeight.w700,                      
             ),
             recognizer: TapGestureRecognizer() 
-              ..onTap = () {
-              context.go('/signup');
-            }
+              ..onTap = () => context.go('/signup'),
           )
         ]
+
       )
     );
   }
-
 }

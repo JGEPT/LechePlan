@@ -6,102 +6,53 @@ import 'package:lecheplan/providers/theme_provider.dart';
 import 'package:lecheplan/widgets/reusableWidgets/custom_filledinputfield.dart';
 import 'package:lecheplan/widgets/reusableWidgets/custom_filledbutton.dart';
 
-class Createprofilepage extends StatefulWidget {
+class Createprofilepage extends StatelessWidget {
   const Createprofilepage({super.key});
 
-  @override
-  State<Createprofilepage> createState() => _CreateProfilePageState();
-}
-
-class _CreateProfilePageState extends State<Createprofilepage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       body: Container(
         color: pinkishBackgroundColor,
         width: double.infinity,
-        padding: EdgeInsets.all(40),
-
+        padding: const EdgeInsets.all(40),
         child: Stack(
-          children: [
-            //main content
-            Column(
-              mainAxisAlignment: MainAxisAlignment.start,
-              crossAxisAlignment: CrossAxisAlignment.center,
-              children: [
-                headerText(), //header and subheader
+          children: const [
+            _MainContent(),
+            
+            _NextButton(),
 
-                const SizedBox(height: 25),
-
-                mainInputContents(),
-              ],
-            ),
-
-            //button
-            Align(
-              alignment: Alignment.bottomCenter,
-              child: FilledButtonDefault(
-                buttonHeight: 50,
-                buttonLabel: "Next",
-                pressAction: () {
-                  context.go('/aboutyou');
-                },
-              ),
-            ),
           ],
         ),
       ),
     );
   }
+}
 
-  Column mainInputContents() {
+class _MainContent extends StatelessWidget {
+  const _MainContent();
+
+  @override
+  Widget build(BuildContext context) {
     return Column(
-      children: [
-        CircleAvatar(
-          backgroundImage: AssetImage('assets/images/sampleAvatar.jpg'),
-          radius: 60,
-        ),
-
-        const SizedBox(height: 25),
-
-        Column(
-          spacing: 15,
-          children: [
-            CustomFilledInputField(
-              inputFontColor: darktextColor,
-              fillColor: lightAccentColor,
-              labelText: "Username",
-              labelFontColor: darktextColor,
-            ),
-            CustomFilledInputField(
-              inputFontColor: darktextColor,
-              fillColor: lightAccentColor,
-              labelText: "First Name",
-              labelFontColor: darktextColor,
-            ),
-            CustomFilledInputField(
-              inputFontColor: darktextColor,
-              fillColor: lightAccentColor,
-              labelText: "Last Name",
-              labelFontColor: darktextColor,
-            ),
-
-            //idk unsaon pa ni maybe better if we use an actual date selector yipee later na doe
-            CustomFilledInputField(
-              inputFontColor: darktextColor,
-              fillColor: lightAccentColor,
-              labelText: "Birthdate",
-              labelFontColor: darktextColor,
-            ),
-          ],
-        ),
+      mainAxisAlignment: MainAxisAlignment.start,
+      crossAxisAlignment: CrossAxisAlignment.center,
+      children: const [
+        _HeaderText(),
+        SizedBox(height: 25),
+        _InputFields(),
       ],
     );
   }
+}
 
-  Container headerText() {
+class _HeaderText extends StatelessWidget {
+  const _HeaderText();
+
+  @override
+  Widget build(BuildContext context) {
     return Container(
-      padding: EdgeInsets.all(10),
+      padding: const EdgeInsets.all(10),
       child: Column(
         children: [
           Text(
@@ -114,13 +65,12 @@ class _CreateProfilePageState extends State<Createprofilepage> {
             ),
           ),
 
-          SizedBox(height: 10),
+          const SizedBox(height: 10),
 
-          //subtitle
           RichText(
             textAlign: TextAlign.center,
             text: TextSpan(
-              style: TextStyle(
+              style: const TextStyle(
                 fontFamily: 'Quicksand',
                 fontSize: 16,
                 fontWeight: FontWeight.w600,
@@ -131,7 +81,6 @@ class _CreateProfilePageState extends State<Createprofilepage> {
                   text: "Customize ",
                   style: TextStyle(color: orangeAccentColor),
                 ),
-
                 TextSpan(
                   text: "your account\nso people know you!",
                   style: TextStyle(color: darktextColor),
@@ -139,7 +88,74 @@ class _CreateProfilePageState extends State<Createprofilepage> {
               ],
             ),
           ),
+
         ],
+      ),
+    );
+  }
+}
+
+class _InputFields extends StatelessWidget {
+  const _InputFields();
+
+  @override
+  Widget build(BuildContext context) {
+    return Column(
+      children: [
+        CircleAvatar(
+          backgroundImage: const AssetImage('assets/images/sampleAvatar.jpg'),
+          radius: 60,
+        ),
+        const SizedBox(height: 25),
+        Column(
+          spacing: 15,
+          children: [
+            CustomFilledInputField(
+              inputFontColor: darktextColor,
+              fillColor: lightAccentColor,
+              labelText: "Username",
+              labelFontColor: darktextColor,
+            ),
+
+            CustomFilledInputField(
+              inputFontColor: darktextColor,
+              fillColor: lightAccentColor,
+              labelText: "First Name",
+              labelFontColor: darktextColor,
+            ),
+
+            CustomFilledInputField(
+              inputFontColor: darktextColor,
+              fillColor: lightAccentColor,
+              labelText: "Last Name",
+              labelFontColor: darktextColor,
+            ),
+
+            CustomFilledInputField(
+              inputFontColor: darktextColor,
+              fillColor: lightAccentColor,
+              labelText: "Birthdate",
+              labelFontColor: darktextColor,
+            ),
+
+          ],
+        ),
+      ],
+    );
+  }
+}
+
+class _NextButton extends StatelessWidget {
+  const _NextButton();
+
+  @override
+  Widget build(BuildContext context) {
+    return Align(
+      alignment: Alignment.bottomCenter,
+      child: FilledButtonDefault(
+        buttonHeight: 50,
+        buttonLabel: "Next",
+        pressAction: () => context.go('/aboutyou'),
       ),
     );
   }

@@ -13,86 +13,105 @@ class LandingPage extends StatelessWidget {
   Widget build(BuildContext context) {
     return Stack(
       children: [
-        
-        //background image
-        Image.asset(
-          'assets/images/landingPageBG.png',
-          fit: BoxFit.cover,
-          width: double.infinity,
-          height: double.infinity,
+        //background image        
+        Positioned.fill(
+          child: Image.asset(
+            'assets/images/landingPageBG.png',
+            fit: BoxFit.cover,
+            cacheWidth: (MediaQuery.of(context).size.width * MediaQuery.of(context).devicePixelRatio).toInt(), 
+            cacheHeight: (MediaQuery.of(context).size.height * MediaQuery.of(context).devicePixelRatio).toInt(),
+            filterQuality: FilterQuality.medium,
+          ),
         ),
 
-        //main stuff
+        //main contents
         Material(
           color: Colors.transparent,
-          child: Container(
-            width: double.infinity,
-            padding: EdgeInsets.all(30),
-            child: Column(
-              mainAxisAlignment: MainAxisAlignment.end,
-              crossAxisAlignment: CrossAxisAlignment.center,
-              children: [
-                // HEADER TEXT
-                largeHeaderText(),
+          child: SafeArea(
+            child: Container(
+              width: double.infinity,
+              padding: const EdgeInsets.all(30),
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.end,
+                crossAxisAlignment: CrossAxisAlignment.center,
+                children: [
+                
+                  const _LargeHeaderText(),
+                  const SizedBox(height: 20),
+                        
+                  const _SubHeaderText(),
           
-                SizedBox(height: 20),
+                  const SizedBox(height: 25),
+
+                  //used thew default button that is big n stuff
+                  FilledButtonDefault(
+                    buttonHeight: 50,
+                    buttonLabel: "Sign Up",
+                    pressAction: () => context.go('/signup'),
+                  ),
           
-                // SUB HEADER TEXT
-                subHeaderText(),
+                  const SizedBox(height: 25),
           
-                SizedBox(height: 25),
+                  _LoginRichText(context),
           
-                FilledButtonDefault(
-                  buttonHeight: 50,
-                  buttonLabel: "Sign Up",
-                  pressAction: () {context.go('/signup');},
-                ),
-          
-                SizedBox(height: 25),
-          
-                loginRichText(context),
-          
-                SizedBox(height: 40),
-          
-              ],
+                  const SizedBox(height: 40),
+                ],
+              ),
             ),
           ),
         ),
       ] 
     );
   }
+}
 
-  RichText loginRichText(BuildContext context) {
-    return RichText(              
+class _LargeHeaderText extends StatelessWidget {
+  const _LargeHeaderText();
+
+  @override
+  Widget build(BuildContext context){
+    return RichText( //richtext for different color  text in the same lines
+      textAlign: TextAlign.center,
       text: TextSpan(
-      text: "Already have an account? ",
-      style: TextStyle(
-        fontFamily: 'Quicksand',
-        color: darktextColor.withValues(alpha: (255 * 0.05)),
-        fontSize: 16,
-        fontWeight: FontWeight.w600,
-      ),
-        
-      children: [
-        TextSpan(
-          text: "Log In",                    
-          style: TextStyle(
-            decoration: TextDecoration.underline,
-            color: orangeAccentColor,
-            fontSize: 16,
-            fontWeight: FontWeight.w700,                      
+        style: const TextStyle(
+          fontFamily: 'Quicksand',
+          fontWeight: FontWeight.w700,
+          fontSize: 30,
+          height: 1.0,
+        ),
+        children:[
+          TextSpan(
+            text: "Turn ",
+            style: TextStyle(color: darktextColor),
           ),
-          recognizer: TapGestureRecognizer() 
-            ..onTap = () {
-            context.go('/login');
-          }
-        )
-      ]
-    )
-  );
-  }
 
-  Text subHeaderText() {
+        
+          TextSpan(
+            text: "Shared Interests",
+            style: TextStyle(color: orangeAccentColor),
+          ),
+
+          TextSpan(
+            text: "\ninto ",
+            style: TextStyle(color: darktextColor),
+          ),
+
+          TextSpan(
+            text: "Shared Memories",
+            style: TextStyle(color: orangeAccentColor),
+          ),
+
+        ],
+      ),
+    );
+  }
+}
+
+class _SubHeaderText extends StatelessWidget {
+  const _SubHeaderText();
+
+  @override
+  Widget build(BuildContext context) {
     return Text(
       "Plan out your next hangout session \nwith your friends, or let us do it for you!",
       textAlign: TextAlign.center,
@@ -104,36 +123,38 @@ class LandingPage extends StatelessWidget {
       ),
     );
   }
+}
 
-  RichText largeHeaderText() {
-    return RichText(
-      textAlign: TextAlign.center,
+class _LoginRichText extends StatelessWidget{
+  final BuildContext context;
+
+  const _LoginRichText(this.context);
+
+  @override
+  Widget build(BuildContext context) {
+    return RichText(              
       text: TextSpan(
+        text: "Already have an account? ",
         style: TextStyle(
           fontFamily: 'Quicksand',
-          fontWeight: FontWeight.w700,
-          fontSize: 30,
-          height: 1.0,
+          color: darktextColor.withValues(alpha: (255 * 0.05)),
+          fontSize: 16,
+          fontWeight: FontWeight.w600,
         ),
         children: [
           TextSpan(
-            text: "Turn ",
-            style: TextStyle(color: darktextColor),
-          ),
-          TextSpan(
-            text: "Shared Interests",
-            style: TextStyle(color: orangeAccentColor),
-          ),
-          TextSpan(
-            text: "\ninto ",
-            style: TextStyle(color: darktextColor),
-          ),
-          TextSpan(
-            text: "Shared Memories",
-            style: TextStyle(color: orangeAccentColor),
-          ),
-        ],
-      ),
+            text: "Log In",                    
+            style: TextStyle(
+              decoration: TextDecoration.underline,
+              color: orangeAccentColor,
+              fontSize: 16,
+              fontWeight: FontWeight.w700,                      
+            ),
+            recognizer: TapGestureRecognizer() 
+              ..onTap = () => context.go('/login'),
+          )
+        ]
+      )
     );
   }
 }
