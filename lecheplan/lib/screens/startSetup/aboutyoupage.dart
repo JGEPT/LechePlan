@@ -9,123 +9,53 @@ import 'package:lecheplan/models/interestoptions.dart';
 import 'package:lecheplan/widgets/reusableWidgets/custom_filledbutton.dart';
 import 'package:lecheplan/widgets/modelWidgets/interests_pill.dart';
 
-class Aboutyoupage extends StatefulWidget {
+class Aboutyoupage extends StatelessWidget {
   const Aboutyoupage({super.key});
 
-  @override
-  State<Aboutyoupage> createState() => _AboutyoupageState();
-}
-
-class _AboutyoupageState extends State<Aboutyoupage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       body: Container(
         color: pinkishBackgroundColor,
         width: double.infinity,
-        padding: EdgeInsets.all(40),
+        padding: const EdgeInsets.all(40),
         child: Stack(
-          children: [
-            //main content
-            Center(
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.start,
-                crossAxisAlignment: CrossAxisAlignment.center,
-                children: [
-                  headerText(), //header and subheader
-
-                  const SizedBox(height: 10),
-
-                  //list of pills
-                  listofPills(),
-
-                  //button
-                  SafeArea(
-                    bottom: false,
-                    child: Align(
-                      alignment: Alignment.bottomCenter,
-                      child: FilledButtonDefault(
-                        buttonHeight: 50,
-                        buttonLabel: "Done!",
-                        pressAction: () {
-                          context.go('/mainhub');
-                        },
-                      ),
-                    ),
-                  ),
-                ],
-              ),
-            ),
+          children: const [
+            _MainContent(),
           ],
         ),
       ),
     );
   }
+}
 
-  Expanded listofPills() {
-    return Expanded(
-      child: Stack(
-        children: [
-          SingleChildScrollView(
-            padding: EdgeInsets.symmetric(vertical: 20),
-            child: Wrap(
-              spacing: 5,
-              runSpacing: 7,
-              alignment: WrapAlignment.center,
-              children:
-                  interestsAndHobbies
-                      .map((interest) => InterestsPill(item: interest))
-                      .toList(),
-            ),
-          ),
+class _MainContent extends StatelessWidget {
+  const _MainContent();
 
-          //top fade for scroll
-          Align(
-            alignment: Alignment.topCenter,
-            child: IgnorePointer(
-              child: Container(
-                height: 10,
-                decoration: BoxDecoration(
-                  gradient: LinearGradient(
-                    begin: Alignment.topCenter,
-                    end: Alignment.bottomCenter,
-                    colors: [
-                      pinkishBackgroundColor,
-                      pinkishBackgroundColor.withAlpha(0),
-                    ],
-                  ),
-                ),
-              ),
-            ),
-          ),
-
-          //bottom fade for scroll
-          Align(
-            alignment: Alignment.bottomCenter,
-            child: IgnorePointer(
-              child: Container(
-                height: 10,
-                decoration: BoxDecoration(
-                  gradient: LinearGradient(
-                    begin: Alignment.topCenter,
-                    end: Alignment.bottomCenter,
-                    colors: [
-                      pinkishBackgroundColor.withAlpha(0),
-                      pinkishBackgroundColor,
-                    ],
-                  ),
-                ),
-              ),
-            ),
-          ),
+  @override
+  Widget build(BuildContext context) {
+    return Center(
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.start,
+        crossAxisAlignment: CrossAxisAlignment.center,
+        children: const [
+          _HeaderText(),
+          SizedBox(height: 10),
+          _InterestsList(),
+          _DoneButton(),
         ],
       ),
     );
   }
+}
 
-  Container headerText() {
+class _HeaderText extends StatelessWidget {
+  const _HeaderText();
+
+  @override
+  Widget build(BuildContext context) {
     return Container(
-      padding: EdgeInsets.all(10),
+      padding: const EdgeInsets.all(10),
       child: Column(
         children: [
           Text(
@@ -137,14 +67,11 @@ class _AboutyoupageState extends State<Aboutyoupage> {
               color: orangeAccentColor,
             ),
           ),
-
-          SizedBox(height: 10),
-
-          //subtitle
-          RichText(
+          const SizedBox(height: 10),
+          RichText( 
             textAlign: TextAlign.center,
             text: TextSpan(
-              style: TextStyle(
+              style: const TextStyle(
                 fontFamily: 'Quicksand',
                 fontSize: 16,
                 fontWeight: FontWeight.w600,
@@ -155,7 +82,6 @@ class _AboutyoupageState extends State<Aboutyoupage> {
                   text: "Share ",
                   style: TextStyle(color: orangeAccentColor),
                 ),
-
                 TextSpan(
                   text: "your interests and hobbies",
                   style: TextStyle(color: darktextColor),
@@ -164,6 +90,103 @@ class _AboutyoupageState extends State<Aboutyoupage> {
             ),
           ),
         ],
+      ),
+    );
+  }
+}
+
+class _InterestsList extends StatelessWidget {
+  const _InterestsList();
+
+  @override
+  Widget build(BuildContext context) {
+    return Expanded(
+      child: Stack(
+        children: [
+          SingleChildScrollView(
+            padding: const EdgeInsets.symmetric(vertical: 20),
+            child: Wrap(
+              spacing: 5,
+              runSpacing: 7,
+              alignment: WrapAlignment.center,
+              children: interestsAndHobbies
+                  .map((interest) => InterestsPill(item: interest)).toList(),
+            ),
+          ),
+          const _TopFade(),
+          const _BottomFade(),
+        ],
+      ),
+    );
+  }
+}
+
+class _TopFade extends StatelessWidget {
+  const _TopFade();
+
+  @override
+  Widget build(BuildContext context) {
+    return Align(
+      alignment: Alignment.topCenter,
+      child: IgnorePointer(
+        child: Container(
+          height: 10,
+          decoration: BoxDecoration(
+            gradient: LinearGradient(
+              begin: Alignment.topCenter,
+              end: Alignment.bottomCenter,
+              colors: [
+                pinkishBackgroundColor,
+                pinkishBackgroundColor.withAlpha(0),
+              ],
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+class _BottomFade extends StatelessWidget {
+  const _BottomFade();
+
+  @override
+  Widget build(BuildContext context) {
+    return Align(
+      alignment: Alignment.bottomCenter,
+      child: IgnorePointer(
+        child: Container(
+          height: 10,
+          decoration: BoxDecoration(
+            gradient: LinearGradient(
+              begin: Alignment.topCenter,
+              end: Alignment.bottomCenter,
+              colors: [
+                pinkishBackgroundColor.withAlpha(0),
+                pinkishBackgroundColor,
+              ],
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+class _DoneButton extends StatelessWidget {
+  const _DoneButton();
+
+  @override
+  Widget build(BuildContext context) {
+    return SafeArea(
+      bottom: false,
+      child: Align(
+        alignment: Alignment.bottomCenter,
+        child: FilledButtonDefault(
+          buttonHeight: 50,
+          buttonLabel: "Done!",
+          pressAction: () => context.go('/mainhub'),
+        ),
       ),
     );
   }
