@@ -1,11 +1,9 @@
-import 'dart:convert';
 import 'package:lecheplan/widgets/reusableWidgets/custom_icontextbutton.dart';
 import 'package:go_router/go_router.dart';
 import 'package:supabase_flutter/supabase_flutter.dart'; //for the database
 
 import 'package:flutter/material.dart';
 import 'package:lecheplan/providers/theme_provider.dart';
-import 'package:flutter/services.dart' show rootBundle;
 
 //model imports
 import 'package:lecheplan/models/plan_model.dart';
@@ -17,7 +15,7 @@ import 'package:lecheplan/widgets/reusableWidgets/custom_filledbutton.dart';
 class HomePage extends StatefulWidget {
   const HomePage({super.key});
 
-  @override
+  @override  
   State<HomePage> createState() => _HomePageState();
 }
 
@@ -54,7 +52,7 @@ class _HeaderContent extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      padding: const EdgeInsets.only(left: 20, right: 20, top: 40, bottom: 20),
+      padding: const EdgeInsets.only(left: 20, right: 20, top: 60, bottom: 10),
       color: Colors.transparent,
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -111,7 +109,7 @@ class _NotificationAndAvatar extends StatelessWidget {
           icon: Icon(
             Icons.notifications_outlined,
             color: Colors.white,
-            size: 35,
+            size: 30,
           ),
         ),
         CircleAvatar(
@@ -149,6 +147,9 @@ class _MainContainer extends StatelessWidget {
           child: Column(
             children: [
               _ComingUpSection(upcomingPlans: upcomingPlans),
+              
+              const SizedBox(height: 20,),
+
               const _SuggestedForYouSection(),
             ],
           ),
