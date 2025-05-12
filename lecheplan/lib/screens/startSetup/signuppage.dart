@@ -20,7 +20,7 @@ class SignUpPage extends StatelessWidget {
         padding: const EdgeInsets.only(top: 40, bottom: 20, right: 40, left: 40),
         child: Stack(
           children: const [
-            Custombackbutton(destinationString: '/'),
+            Padding(padding: EdgeInsets.symmetric(vertical: 30, horizontal: 0), child: Custombackbutton(destinationString: '/')),
             _SignUpContents(),
           ],
         ),
@@ -49,7 +49,7 @@ class _SignUpContents extends StatelessWidget {
         SizedBox(height: 30),
 
         _SignUpButton(),
-        SizedBox(height: 30),
+        SizedBox(height: 20),
         
         _LoginRichText(),
       ],
@@ -85,7 +85,7 @@ class _SubHeaderText extends StatelessWidget {
       style: TextStyle(
         fontSize: 16,
         fontWeight: FontWeight.w600,
-        color: darktextColor.withValues(alpha: (255 * 0.05)),
+        color: darktextColor,
         height: 1.0,
       ),
     );
@@ -145,11 +145,12 @@ class _LoginRichText extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return RichText(
+      textScaler: TextScaler.linear(0.8),         
       text: TextSpan(
         text:  "Already have an account? ",
         style: TextStyle(
           fontFamily: 'Quicksand',
-          color: darktextColor.withValues(alpha: (255 * 0.05)),
+          color: darktextColor,
           fontSize: 16,
           fontWeight: FontWeight.w600,
         ),

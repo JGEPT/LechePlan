@@ -15,6 +15,7 @@ class Aboutyoupage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      resizeToAvoidBottomInset: false,
       body: Container(
         color: pinkishBackgroundColor,
         width: double.infinity,
@@ -55,7 +56,7 @@ class _HeaderText extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      padding: const EdgeInsets.all(10),
+      padding: const EdgeInsets.only(top: 30, left: 10 ,right:10, bottom: 10),
       child: Column(
         children: [
           Text(

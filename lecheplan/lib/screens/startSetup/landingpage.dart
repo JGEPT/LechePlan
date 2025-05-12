@@ -70,38 +70,41 @@ class _LargeHeaderText extends StatelessWidget {
 
   @override
   Widget build(BuildContext context){
-    return RichText( //richtext for different color  text in the same lines
-      textAlign: TextAlign.center,
-      text: TextSpan(
-        style: const TextStyle(
-          fontFamily: 'Quicksand',
-          fontWeight: FontWeight.w700,
-          fontSize: 30,
-          height: 1.0,
+    return FittedBox( //box fit to adjust the size depending on the screen width
+      fit: BoxFit.scaleDown,
+      child: RichText( //richtext for different color  text in the same lines
+        textAlign: TextAlign.center,
+        text: TextSpan(
+          style: const TextStyle(
+            fontFamily: 'Quicksand',
+            fontWeight: FontWeight.w700,
+            fontSize: 30,
+            height: 1.0,
+          ),
+          children:[
+            TextSpan(
+              text: "Turn ",
+              style: TextStyle(color: darktextColor),
+            ),
+      
+          
+            TextSpan(
+              text: "Shared Interests",
+              style: TextStyle(color: orangeAccentColor),
+            ),
+      
+            TextSpan(
+              text: "\ninto ",
+              style: TextStyle(color: darktextColor),
+            ),
+      
+            TextSpan(
+              text: "Shared Memories",
+              style: TextStyle(color: orangeAccentColor),
+            ),
+      
+          ],
         ),
-        children:[
-          TextSpan(
-            text: "Turn ",
-            style: TextStyle(color: darktextColor),
-          ),
-
-        
-          TextSpan(
-            text: "Shared Interests",
-            style: TextStyle(color: orangeAccentColor),
-          ),
-
-          TextSpan(
-            text: "\ninto ",
-            style: TextStyle(color: darktextColor),
-          ),
-
-          TextSpan(
-            text: "Shared Memories",
-            style: TextStyle(color: orangeAccentColor),
-          ),
-
-        ],
       ),
     );
   }
@@ -112,14 +115,17 @@ class _SubHeaderText extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Text(
-      "Plan out your next hangout session \nwith your friends, or let us do it for you!",
-      textAlign: TextAlign.center,
-      style: TextStyle(
-        fontSize: 16,
-        fontWeight: FontWeight.w600,
-        color: darktextColor,
-        height: 1.0,
+    return FittedBox(
+      fit: BoxFit.scaleDown,
+      child: Text(
+        "Plan out your next hangout session \nwith your friends, or let us do it for you!",
+        textAlign: TextAlign.center,
+        style: TextStyle(
+          fontSize: 16,
+          fontWeight: FontWeight.w600,
+          color: darktextColor,
+          height: 1.0,
+        ),
       ),
     );
   }
@@ -132,13 +138,14 @@ class _LoginRichText extends StatelessWidget{
 
   @override
   Widget build(BuildContext context) {
-    return RichText(              
+    return RichText(      
+      textScaler: TextScaler.linear(0.8),         
       text: TextSpan(
         text: "Already have an account? ",
         style: TextStyle(
           fontFamily: 'Quicksand',
-          color: darktextColor.withValues(alpha: (255 * 0.05)),
-          fontSize: 16,
+          color: darktextColor,
+          fontSize: 15,
           fontWeight: FontWeight.w600,
         ),
         children: [
@@ -147,7 +154,7 @@ class _LoginRichText extends StatelessWidget{
             style: TextStyle(
               decoration: TextDecoration.underline,
               color: orangeAccentColor,
-              fontSize: 16,
+              fontSize: 15,
               fontWeight: FontWeight.w700,                      
             ),
             recognizer: TapGestureRecognizer() 
