@@ -5,6 +5,7 @@ import 'package:lecheplan/providers/theme_provider.dart';
 
 //page imports
 import 'package:lecheplan/screens/mainPages/homePage/homepage.dart';
+import 'package:lecheplan/screens/mainPages/peoplePage/peoplepage.dart';
 
 class Mainhubpage extends StatefulWidget {
   const Mainhubpage({super.key});
@@ -27,8 +28,10 @@ class _MainhubpageState extends State<Mainhubpage> {
     final List<Widget> widgetOptions = <Widget> [
       //home page
       HomePage(),
+      
+      //people page
+      PeoplePage(),
 
-      Text('Index 2: People'),
       Text('Index 3: Plans'),
       Text('Index 4: Profile'),
     ];
