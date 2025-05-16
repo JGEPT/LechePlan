@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:lecheplan/providers/theme_provider.dart';
 import 'package:go_router/go_router.dart';
+import 'package:lecheplan/models/friendlist.dart';
 
 class PeoplePage extends StatefulWidget {
   const PeoplePage({super.key});
@@ -12,11 +13,15 @@ class PeoplePage extends StatefulWidget {
 class _PeoplePageState extends State<PeoplePage> {
   @override
   Widget build(BuildContext context) {
-    return Column(
-      children: const [
-        _HeaderContent(),
-        _MainContent(),
-      ],
+    return DefaultTabController(
+      length: 2,
+      child: Column(
+        children: const [
+          _HeaderContent(),
+          _PeopleBar(),
+          _MainContent(),
+        ],
+      ),
     );
   }
 }
@@ -81,33 +86,47 @@ class _NotificationAndAvatar extends StatelessWidget {
   }
 }
 
-class _MainContent extends StatelessWidget {
-  const _MainContent();
+class _PeopleBar extends StatelessWidget {
+  const _PeopleBar();
 
   @override
   Widget build(BuildContext context) {
-    return Expanded(
-      child: Container(
-        padding: const EdgeInsets.symmetric(horizontal: 20),
-        child: ListView(
-          children: [
-            // PLACEHOLDER
-            _FriendCard(
-              name: 'Ishah Bautista',
-              activity: '1 upcoming activity planned',
-              profile: 'assets/images/sampleAvatar.jpg',
-              onTap: () {
-                // adding em to an activity
-              },
-            ),
-            _FriendCard(
-              name: 'James Ty',
-              activity: '2 upcoming activity planned',
-              profile: 'assets/images/sampleAvatar.jpg',
-              onTap: () {
-                // adding em to an activity
-              },
-            ),
+    return Container(
+      margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+      height: 40,
+      decoration: BoxDecoration(              
+        color: greyAccentColor,
+        borderRadius: BorderRadius.circular(10)            
+      ),
+      child: Material( 
+        color: Colors.transparent,
+        borderRadius: BorderRadius.circular(10),
+        clipBehavior: Clip.antiAlias,
+
+        child: TabBar(          
+          //labels
+          labelStyle: TextStyle(
+            fontFamily: 'Quicksand',
+            fontWeight: FontWeight.w700,
+            fontSize: 13
+          ),                
+          unselectedLabelColor: darktextColor,
+          labelColor: darktextColor,
+        
+          //indicator
+          indicator: BoxDecoration(
+            color: Colors.white,
+            borderRadius: BorderRadius.circular(8),
+            boxShadow: [defaultBoxShadow]
+          ),
+          indicatorSize: TabBarIndicatorSize.tab,
+          indicatorPadding: const EdgeInsets.all(5),
+          indicatorAnimation: TabIndicatorAnimation.elastic,
+          dividerHeight: 0,
+          //content
+          tabs: [
+            Tab(text: 'Friend'),
+            Tab(text: 'Group'),
           ],
         ),
       ),
@@ -115,14 +134,75 @@ class _MainContent extends StatelessWidget {
   }
 }
 
+class _MainContent extends StatelessWidget {
+  const _MainContent();
+
+  @override
+  Widget build(BuildContext context) {
+    return Expanded(
+      child: TabBarView(
+        children: [
+          //friends tab
+          Container(
+            padding: const EdgeInsets.symmetric(horizontal: 20),
+            child: sampleFriends.isEmpty
+                ? const Center(
+                    child: Text(
+                      'You got no friends',
+                      style: TextStyle(
+                        fontFamily: 'Quicksand',
+                        fontSize: 16,
+                        color: Colors.grey,
+                      ),
+                    ),
+                  )
+                : ListView.builder(
+                    padding: const EdgeInsets.only(bottom: 80),
+                    itemCount: sampleFriends.length,
+                    itemBuilder: (context, index) {
+                      final friend = sampleFriends[index];
+                      return _FriendCard(
+                        userID: friend.userID,
+                        name: friend.name,
+                        activity: friend.activity,
+                        profile: friend.profile,
+                        onTap: () {
+                          // adding em to an activity
+                        },
+                      );
+                    },
+                  ),
+          ),
+          //group tab
+          Container(
+            padding: const EdgeInsets.symmetric(horizontal: 20),
+            child: const Center(
+              child: Text(
+                'You dont have friends',
+                style: TextStyle(
+                  fontFamily: 'Quicksand',
+                  fontSize: 16,
+                  color: Colors.grey,
+                ),
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
 //still temp, i feel like the boxes are too big. I think imma change it \0/
 class _FriendCard extends StatelessWidget {
+  final String userID;
   final String name;
   final String activity;
   final String profile;
   final VoidCallback? onTap;
 
   const _FriendCard({
+    required this.userID,
     required this.name,
     required this.activity,
     required this.profile,
