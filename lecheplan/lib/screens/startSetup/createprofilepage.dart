@@ -98,10 +98,10 @@ class _HeaderText extends StatelessWidget {
 }
 
 class _InputFields extends StatelessWidget {
-  const _InputFields();
 
+  const _InputFields();
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext   context) {
     return Column(
       children: [
         CircleAvatar(
