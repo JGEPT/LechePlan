@@ -49,11 +49,11 @@ class _NotifsAppBar extends StatelessWidget {
         ],
         
         bottom: PreferredSize(
-          preferredSize: const Size.fromHeight(48),
+          preferredSize: const Size.fromHeight(40),
           //use contianer to determine the look of the actual tab bar
           child: Container(
-            margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-            height: 40,
+            margin: const EdgeInsets.only(left: 16, right: 16, top: 0, bottom: 8),
+            height: 35,
             decoration: BoxDecoration(              
               color: greyAccentColor,
               borderRadius: BorderRadius.circular(10)            
@@ -149,7 +149,7 @@ class TodayNotificationsList extends StatelessWidget {
 
         ...List.generate(2, (index) {
           return Container(
-            color: orangeAccentColor.withAlpha(100),
+            color: orangeAccentColor.withAlpha(50),
             height: 50,
             width: double.infinity,
           );
@@ -186,7 +186,7 @@ class EarlierNotificationsList extends StatelessWidget {
 
         ...List.generate(20, (index) {
           return Container(
-            color: orangeAccentColor.withAlpha(100),
+            color: orangeAccentColor.withAlpha(50),
             height: 50,
             width: double.infinity,
           );
