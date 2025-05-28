@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/gestures.dart';
 import 'package:go_router/go_router.dart';
-import 'package:lecheplan/providers/theme_provider.dart';
+ import 'package:lecheplan/providers/theme_provider.dart';
 
 //widget imports
 import 'package:lecheplan/widgets/reusableWidgets/custom_filledbutton.dart';
@@ -18,8 +18,7 @@ class LandingPage extends StatelessWidget {
           child: Image.asset(
             'assets/images/landingPageBG.png',
             fit: BoxFit.cover,
-            cacheWidth: (MediaQuery.of(context).size.width * MediaQuery.of(context).devicePixelRatio).toInt(), 
-            cacheHeight: (MediaQuery.of(context).size.height * MediaQuery.of(context).devicePixelRatio).toInt(),
+            cacheWidth: (MediaQuery.of(context).size.width * MediaQuery.of(context).devicePixelRatio).toInt(),
             filterQuality: FilterQuality.medium,
           ),
         ),
