@@ -5,6 +5,9 @@ import 'package:lecheplan/providers/theme_provider.dart';
 
 //page imports
 import 'package:lecheplan/screens/mainPages/homePage/homepage.dart';
+import 'package:lecheplan/screens/mainPages/peoplePage/peoplepage.dart';
+import 'package:lecheplan/screens/mainPages/plansPage/planspage.dart';
+import 'package:lecheplan/screens/mainPages/profilePage/profilepage.dart';
 
 class Mainhubpage extends StatefulWidget {
   const Mainhubpage({super.key});
@@ -17,7 +20,7 @@ class _MainhubpageState extends State<Mainhubpage> {
   int _selectedIndex = 0;
   void _onItemTapped(int index) {
     setState(() {
-      _selectedIndex= index;
+      _selectedIndex = index;
     });
   }
 
@@ -27,15 +30,13 @@ class _MainhubpageState extends State<Mainhubpage> {
     final List<Widget> widgetOptions = <Widget> [
       //home page
       HomePage(),
-
-      Text('Index 2: People'),
-      Text('Index 3: Plans'),
-      Text('Index 4: Profile'),
+      PeoplePage(),
+      PlansPage(),
+      ProfilePage(),
     ];
 
     return Stack(
       children: [
-        
         _BackgroundContainer(widgetOptions: widgetOptions, selectedIndex: _selectedIndex),
         Align(
           alignment: Alignment.bottomCenter,
@@ -44,24 +45,18 @@ class _MainhubpageState extends State<Mainhubpage> {
             unselectedItemColor: unselectedGreyColor.withAlpha(180),
             selectedLabelStyle: TextStyle(fontFamily: 'Quicksand', fontWeight: FontWeight.w700),
             unselectedLabelStyle: TextStyle(fontFamily: 'Quicksand', fontWeight: FontWeight.w600),
-
             type: BottomNavigationBarType.fixed,
-
             items: <BottomNavigationBarItem>[
               BottomNavigationBarItem(icon: Icon(Icons.home_filled), label: 'HOME', ),
               BottomNavigationBarItem(icon: Icon(Icons.people_rounded), label: 'PEOPLE'),
               BottomNavigationBarItem(icon: Icon(Icons.calendar_month_rounded), label: 'PLANS'),
               BottomNavigationBarItem(icon: Icon(Icons.person_rounded), label: 'PROFILE')
             ],
-
             currentIndex: _selectedIndex,
             onTap: _onItemTapped,
           ),
         ),
-        
       ]
-      
-      
     );
   }
 }
