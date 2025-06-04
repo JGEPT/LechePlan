@@ -1,6 +1,6 @@
 import 'package:lecheplan/widgets/reusableWidgets/custom_icontextbutton.dart';
 import 'package:go_router/go_router.dart';
-import 'package:supabase_flutter/supabase_flutter.dart'; //for the database
+//for the database
 
 import 'package:flutter/material.dart';
 import 'package:lecheplan/providers/theme_provider.dart';
@@ -9,7 +9,6 @@ import 'package:lecheplan/providers/theme_provider.dart';
 import 'package:lecheplan/models/plan_model.dart';
 
 //widget imports
-import 'package:lecheplan/widgets/modelWidgets/upcomingplans_card.dart';
 import 'package:lecheplan/widgets/reusableWidgets/custom_filledbutton.dart';
 
 class HomePage extends StatefulWidget {
