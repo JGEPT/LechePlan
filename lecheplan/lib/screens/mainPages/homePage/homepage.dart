@@ -9,6 +9,7 @@ import 'package:lecheplan/models/plan_model.dart';
 
 //widget imports
 import 'package:lecheplan/widgets/reusableWidgets/custom_filledbutton.dart';
+import 'package:lecheplan/widgets/modelWidgets/upcomingplans_card.dart';
 
 class HomePage extends StatefulWidget {
   final List<Plan> plans;
@@ -213,7 +214,7 @@ class _ComingUpSection extends StatelessWidget {
               final plan = plans[index];
               return Padding(
                 padding: const EdgeInsets.only(bottom: 8.0),
-                child: UpcomingplansCard(currentPlan: plan),
+                child: UpcomingplansCard(plan: plan),
               );
             },
           ),

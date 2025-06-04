@@ -85,6 +85,7 @@ class _MainhubpageState extends State<Mainhubpage> {
         planDateTime: planDateTime,
         participants: planData['participants'] != null ? List<String>.from(planData['participants']) : [],
         tags: planData['tags'] != null ? List<String>.from(planData['tags']) : [],
+        avatarAssets: [],
       );
     }).toList();
   }
