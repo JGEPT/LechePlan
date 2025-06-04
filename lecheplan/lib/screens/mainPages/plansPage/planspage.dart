@@ -1,9 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:lecheplan/models/plan_model.dart';
 import 'package:lecheplan/providers/theme_provider.dart';
+import 'package:lecheplan/widgets/modelWidgets/upcomingplans_card.dart';
 
 class PlansPage extends StatefulWidget {
-  const PlansPage({Key? key}) : super(key: key);
+  const PlansPage({super.key});
 
   @override
   State<PlansPage> createState() => _PlansPageState();
@@ -127,7 +128,7 @@ class _PlansPageState extends State<PlansPage> {
             },
           ),
     );
-    Overlay.of(context, rootOverlay: true)?.insert(_monthYearOverlay!);
+    Overlay.of(context, rootOverlay: true).insert(_monthYearOverlay!);
     setState(() => showMonthYearPicker = true);
   }
 
@@ -514,7 +515,7 @@ class _PlansPageState extends State<PlansPage> {
           onExit: (_) => setState(() => highlightedIndex = null),
           child: GestureDetector(
             onTap: () => setState(() => highlightedIndex = index),
-            child: _PlanCard(
+            child: UpcomingplansCard(
               plan: plans[index],
               highlighted: highlightedIndex == index,
             ),
@@ -817,64 +818,63 @@ class _PlansPageState extends State<PlansPage> {
                                         selectedDay = day;
                                       });
                                     },
-                                    child: Column(
-                                      mainAxisAlignment:
-                                          MainAxisAlignment.center,
+                                    child: Stack(
+                                      alignment: Alignment.center,
                                       children: [
-                                        Stack(
-                                          alignment: Alignment.center,
+                                        Column(
+                                          mainAxisAlignment:
+                                              MainAxisAlignment.center,
                                           children: [
-                                            if (isToday)
-                                              Container(
-                                                width: 36,
-                                                height: 36,
-                                                decoration: BoxDecoration(
-                                                  color: orangeAccentColor,
-                                                  shape: BoxShape.circle,
-                                                ),
-                                              ),
-                                            if (isSelected && !isToday)
-                                              Container(
-                                                width: 36,
-                                                height: 36,
-                                                decoration: BoxDecoration(
-                                                  color: darktextColor
-                                                      .withOpacity(0.08),
-                                                  shape: BoxShape.circle,
-                                                ),
-                                              ),
-                                            Text(
-                                              '${day.day}',
-                                              style: TextStyle(
+                                            Container(
+                                              width: 36,
+                                              height: 36,
+                                              decoration: BoxDecoration(
                                                 color:
                                                     isToday
-                                                        ? lighttextColor
-                                                        : isSelected
                                                         ? orangeAccentColor
-                                                        : darktextColor,
-                                                fontWeight: FontWeight.w700,
-                                                fontSize: 18,
-                                                fontFamily: 'Quicksand',
+                                                        : isSelected
+                                                        ? darktextColor
+                                                            .withOpacity(0.08)
+                                                        : Colors.transparent,
+                                                shape: BoxShape.circle,
+                                              ),
+                                              child: Center(
+                                                child: Text(
+                                                  '${day.day}',
+                                                  style: TextStyle(
+                                                    color:
+                                                        isToday
+                                                            ? lighttextColor
+                                                            : darktextColor,
+                                                    fontWeight: FontWeight.w700,
+                                                    fontSize: 18,
+                                                    fontFamily: 'Quicksand',
+                                                  ),
+                                                ),
                                               ),
                                             ),
                                           ],
                                         ),
-                                        const SizedBox(height: 2),
                                         if (plansForDay.isNotEmpty)
-                                          plansForDay.length == 1
-                                              ? Container(
-                                                width: 7,
-                                                height: 7,
-                                                decoration: BoxDecoration(
-                                                  color: orangeAccentColor,
-                                                  shape: BoxShape.circle,
-                                                ),
-                                              )
-                                              : Icon(
-                                                Icons.workspaces,
-                                                color: orangeAccentColor,
-                                                size: 15,
-                                              ),
+                                          Positioned(
+                                            bottom: 0,
+                                            child:
+                                                plansForDay.length == 1
+                                                    ? Container(
+                                                      width: 7,
+                                                      height: 7,
+                                                      decoration: BoxDecoration(
+                                                        color:
+                                                            orangeAccentColor,
+                                                        shape: BoxShape.circle,
+                                                      ),
+                                                    )
+                                                    : Icon(
+                                                      Icons.workspaces,
+                                                      color: orangeAccentColor,
+                                                      size: 15,
+                                                    ),
+                                          ),
                                       ],
                                     ),
                                   );
@@ -928,7 +928,7 @@ class _PlansPageState extends State<PlansPage> {
                                 () => setState(
                                   () => highlightedCalendarIndex = index,
                                 ),
-                            child: _PlanCard(
+                            child: UpcomingplansCard(
                               plan: allPlansSorted[index],
                               highlighted: highlightedCalendarIndex == index,
                             ),
@@ -959,198 +959,6 @@ class _PlansPageState extends State<PlansPage> {
       'December',
     ];
     return '${months[date.month]} ${date.year}';
-  }
-}
-
-class _PlanCard extends StatelessWidget {
-  final Plan plan;
-  final bool highlighted;
-
-  const _PlanCard({required this.plan, required this.highlighted});
-
-  @override
-  Widget build(BuildContext context) {
-    final date = plan.planDateTime;
-    final startTime = TimeOfDay(hour: date.hour, minute: date.minute);
-    final endTime = TimeOfDay(
-      hour: (date.hour + 4) % 24,
-      minute: date.minute,
-    ); // 4 hour duration for demo
-    final dateString =
-        '${_monthShort(date.month)} ${date.day}, ${date.year}  •  ${_formatTime(startTime)} - ${_formatTime(endTime)}';
-
-    // Pop out and enlarge if highlighted
-    final double scale = highlighted ? 1.035 : 1.0;
-    final double shadowBlur = highlighted ? 18 : 8;
-    final double shadowOpacity = highlighted ? 0.10 : 0.04;
-    final Offset shadowOffset =
-        highlighted ? const Offset(0, 4) : const Offset(0, 2);
-
-    return AnimatedScale(
-      scale: scale,
-      duration: const Duration(milliseconds: 140),
-      curve: Curves.easeOut,
-      child: Container(
-        decoration: BoxDecoration(
-          color: Colors.white,
-          borderRadius: BorderRadius.circular(16),
-          border:
-              highlighted
-                  ? Border.all(color: orangeAccentColor, width: 2)
-                  : Border.all(color: const Color(0xFFE0E0E0), width: 1),
-          boxShadow: [
-            BoxShadow(
-              color: Colors.black.withOpacity(shadowOpacity),
-              blurRadius: shadowBlur,
-              offset: shadowOffset,
-            ),
-          ],
-        ),
-        child: Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
-          child: Row(
-            crossAxisAlignment: CrossAxisAlignment.center,
-            children: [
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      plan.title,
-                      style: const TextStyle(
-                        color: Color(0xFF0E1342),
-                        fontWeight: FontWeight.w700,
-                        fontSize: 20,
-                        fontFamily: 'Quicksand',
-                      ),
-                    ),
-                    const SizedBox(height: 2),
-                    RichText(
-                      text: TextSpan(
-                        text: 'with ',
-                        style: const TextStyle(
-                          fontFamily: 'Quicksand',
-                          color: Color(0xFF0E1342),
-                          fontWeight: FontWeight.w500,
-                          fontSize: 13,
-                        ),
-                        children: [
-                          TextSpan(
-                            text: plan.participants.join(', '),
-                            style: const TextStyle(
-                              fontWeight: FontWeight.w700,
-                              color: Color(0xFFFF6600),
-                              fontSize: 13,
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-                    const SizedBox(height: 6),
-                    Text(
-                      dateString,
-                      style: const TextStyle(
-                        fontFamily: 'Quicksand',
-                        color: Color(0xFF0E1342),
-                        fontWeight: FontWeight.w600,
-                        fontSize: 13,
-                        letterSpacing: 0.1,
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-              const SizedBox(width: 10),
-              _AvatarsDisplay(
-                avatarAssets: plan.avatarAssets,
-                participantCount: plan.participants.length,
-              ),
-            ],
-          ),
-        ),
-      ),
-    );
-  }
-
-  String _monthShort(int month) {
-    const months = [
-      '',
-      'Jan',
-      'Feb',
-      'Mar',
-      'Apr',
-      'May',
-      'Jun',
-      'Jul',
-      'Aug',
-      'Sep',
-      'Oct',
-      'Nov',
-      'Dec',
-    ];
-    return months[month];
-  }
-
-  String _formatTime(TimeOfDay t) {
-    final hour = t.hourOfPeriod == 0 ? 12 : t.hourOfPeriod;
-    final period = t.period == DayPeriod.am ? 'AM' : 'PM';
-    final min = t.minute.toString().padLeft(2, '0');
-    return '$hour:$min $period';
-  }
-}
-
-class _AvatarsDisplay extends StatelessWidget {
-  final List<String> avatarAssets;
-  final int participantCount;
-
-  const _AvatarsDisplay({
-    required this.avatarAssets,
-    required this.participantCount,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    final showCount = participantCount > 3 ? 3 : participantCount;
-    final extraCount = participantCount - 3;
-    final double overlap = 18; // amount of overlap
-
-    List<Widget> avatarWidgets = [];
-    for (int i = 0; i < showCount; i++) {
-      avatarWidgets.add(
-        Positioned(
-          left: i * overlap,
-          child: CircleAvatar(
-            backgroundImage: AssetImage(avatarAssets[i]),
-            radius: 18,
-          ),
-        ),
-      );
-    }
-    if (extraCount > 0) {
-      avatarWidgets.add(
-        Positioned(
-          left: showCount * overlap,
-          child: CircleAvatar(
-            radius: 18,
-            backgroundColor: const Color(0xFFDFDFDF),
-            child: Text(
-              '+$extraCount',
-              style: const TextStyle(
-                color: Color(0xFF0E1342),
-                fontWeight: FontWeight.bold,
-                fontSize: 13,
-              ),
-            ),
-          ),
-        ),
-      );
-    }
-
-    return SizedBox(
-      width: (showCount + (extraCount > 0 ? 1 : 0)) * overlap + 18,
-      height: 36,
-      child: Stack(clipBehavior: Clip.none, children: avatarWidgets),
-    );
   }
 }
 
@@ -1214,6 +1022,13 @@ class _MonthYearPickerOverlayState extends State<_MonthYearPickerOverlay> {
   void dispose() {
     _fixedExtentController?.dispose();
     super.dispose();
+  }
+
+  void _handleYearSelection(int year) {
+    setState(() {
+      selectedYear = year;
+      showYearPicker = false;
+    });
   }
 
   @override
@@ -1350,10 +1165,7 @@ class _MonthYearPickerOverlayState extends State<_MonthYearPickerOverlay> {
                                   ),
                                 ),
                                 onPressed:
-                                    () => widget.onSelect(
-                                      selectedYear,
-                                      selectedMonth,
-                                    ),
+                                    () => _handleYearSelection(selectedYear),
                                 child: const Text('Select'),
                               ),
                             ],
@@ -1471,8 +1283,8 @@ class _PlanModalButton extends StatefulWidget {
     required this.label,
     required this.onTap,
     required this.color,
-    Key? key,
-  }) : super(key: key);
+    super.key,
+  });
   @override
   State<_PlanModalButton> createState() => _PlanModalButtonState();
 }

@@ -65,7 +65,7 @@ const List<String> kFixedInterests = [
 List<String> activeInterests = [];
 
 class EditProfilePage extends StatefulWidget {
-  const EditProfilePage({Key? key}) : super(key: key);
+  const EditProfilePage({super.key});
 
   @override
   _EditProfilePageState createState() => _EditProfilePageState();

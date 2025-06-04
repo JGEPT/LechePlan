@@ -36,7 +36,7 @@ const List<String> kFixedInterests = [
 
 class EditInterestsPage extends StatefulWidget {
   final List<String> activeInterests;
-  const EditInterestsPage({Key? key, required this.activeInterests}) : super(key: key);
+  const EditInterestsPage({super.key, required this.activeInterests});
 
   @override
   State<EditInterestsPage> createState() => _EditInterestsPageState();
