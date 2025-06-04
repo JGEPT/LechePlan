@@ -31,20 +31,52 @@ Future<void> main() async {
   
   // Setup logging first
   setupLogging();
+  final logger = Logger('SupabaseConnection');
   
-  // Initialize Supabase in the background
-  final supabaseFuture = Supabase.initialize(
-    url: 'https://abbdlkterbdhcwkxvgod.supabase.co',
-    anonKey: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImFiYmRsa3RlcmJkaGN3a3h2Z29kIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDY3NTQzNDksImV4cCI6MjA2MjMzMDM0OX0.-nN5sW4BuTZaLvIxtJeFsKQgs5PMqrWTM4GWwGrToko',
-  );
+  //show loading screen immediately while waiting for supabase
+  runApp(MaterialApp(
+    home: Scaffold(
+      body: Center(
+        child: CircularProgressIndicator(),
+      ),
+    ),
+  ));
 
-  runApp(MyApp(supabaseFuture: supabaseFuture));
+  try {
+    //initialize Supabase
+    await Supabase.initialize(
+      url: 'https://abbdlkterbdhcwkxvgod.supabase.co',
+      anonKey: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImFiYmRsa3RlcmJkaGN3a3h2Z29kIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDY3NTQzNDksImV4cCI6MjA2MjMzMDM0OX0.-nN5sW4BuTZaLvIxtJeFsKQgs5PMqrWTM4GWwGrToko',
+    );
+    
+    // verify connection by checking auth status
+    final auth = Supabase.instance.client.auth;
+    logger.info('Supabase connection successful - Auth initialized');
+    
+    // Additional connection verification
+    final client = Supabase.instance.client;
+    logger.info('Supabase client initialized successfully');
+    
+    // log the current session status
+    final session = client.auth.currentSession;
+    logger.info('Current auth session: ${session != null ? 'Active' : 'No active session'}');
+    
+    // runn the main app after initialization
+    runApp(MyApp());
+  } catch (e) {
+    logger.severe('Failed to initialize Supabase: $e');
+    runApp(MaterialApp(
+      home: Scaffold(
+        body: Center(
+          child: Text('Failed to connect to database. Please try again.'),
+        ),
+      ),
+    ));
+  }
 }
 
 class MyApp extends StatelessWidget {
-  final Future<void> supabaseFuture;
-  
-  MyApp({super.key, required this.supabaseFuture});
+  MyApp({super.key});
   
   final GoRouter _router = GoRouter(
     routes: [      

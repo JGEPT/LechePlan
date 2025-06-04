@@ -1,7 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:lecheplan/screens/mainPages/homePage/homepage.dart';
-import 'package:lecheplan/screens/mainPages/peoplePage/peoplepage.dart';
-import 'package:lecheplan/screens/mainPages/plansPage/planspage.dart';
 import 'package:lecheplan/screens/mainPages/profilePage/editprof.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'dart:ui';
@@ -26,6 +23,8 @@ const List<String> kFixedInterests = [
 ];
 
 class ProfilePage extends StatefulWidget {
+  const ProfilePage({super.key});
+
   @override
   _ProfilePageState createState() => _ProfilePageState();
 }
@@ -105,17 +104,6 @@ class _ProfilePageState extends State<ProfilePage> {
       setState(() {
         activeInterests = List<String>.from(kFixedInterests); // default: all active
       });
-    }
-  }
-
-  // Handles navigation for the bottom navigation bar
-  void _onItemTapped(BuildContext context, int index) {
-    if (index == 0) {
-      Navigator.pushReplacement(context, MaterialPageRoute(builder: (context) => HomePage()));
-    } else if (index == 1) {
-      Navigator.pushReplacement(context, MaterialPageRoute(builder: (context) => PeoplePage()));
-    } else if (index == 2) {
-      Navigator.pushReplacement(context, MaterialPageRoute(builder: (context) => PlansPage()));
     }
   }
 
