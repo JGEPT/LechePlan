@@ -1,6 +1,5 @@
 import 'package:lecheplan/widgets/reusableWidgets/custom_icontextbutton.dart';
 import 'package:go_router/go_router.dart';
-//for the database
 
 import 'package:flutter/material.dart';
 import 'package:lecheplan/providers/theme_provider.dart';
@@ -12,17 +11,20 @@ import 'package:lecheplan/models/plan_model.dart';
 import 'package:lecheplan/widgets/reusableWidgets/custom_filledbutton.dart';
 
 class HomePage extends StatefulWidget {
-  const HomePage({super.key});
+  final List<Plan> plans;
+  final bool isLoading;
+  
+  const HomePage({
+    super.key,
+    required this.plans,
+    required this.isLoading,
+  });
 
   @override  
   State<HomePage> createState() => _HomePageState();
 }
 
 class _HomePageState extends State<HomePage> {
-  List<Plan> plans = [];
-  List<Map<String, dynamic>> upcomingPlans = [];
-  bool isLoading = true;
-
   @override
   void initState() {
     super.initState();
@@ -36,8 +38,8 @@ class _HomePageState extends State<HomePage> {
         children: [
           const _HeaderContent(),
           _MainContainer(
-            isLoading: isLoading,
-            upcomingPlans: upcomingPlans,
+            isLoading: widget.isLoading,
+            plans: widget.plans,          
           ),
         ],
       ),
@@ -122,11 +124,11 @@ class _NotificationAndAvatar extends StatelessWidget {
 
 class _MainContainer extends StatelessWidget {
   final bool isLoading;
-  final List<Map<String, dynamic>> upcomingPlans;
+  final List<Plan> plans;
 
   const _MainContainer({
     required this.isLoading,
-    required this.upcomingPlans,
+    required this.plans,
   });
 
   @override
@@ -145,7 +147,7 @@ class _MainContainer extends StatelessWidget {
         child: SingleChildScrollView(
           child: Column(
             children: [
-              _ComingUpSection(upcomingPlans: upcomingPlans),
+              _ComingUpSection(isLoading: isLoading, plans: plans),
               
               const SizedBox(height: 20,),
 
@@ -159,9 +161,15 @@ class _MainContainer extends StatelessWidget {
 }
 
 class _ComingUpSection extends StatelessWidget {
-  final List<Map<String, dynamic>> upcomingPlans;
+  final List<Plan> plans;
+  final bool isLoading;
 
-  const _ComingUpSection({required this.upcomingPlans});
+  const _ComingUpSection(
+    {
+      required this.plans, 
+      required this.isLoading,
+      }
+    );
 
   @override
   Widget build(BuildContext context) {
@@ -176,42 +184,49 @@ class _ComingUpSection extends StatelessWidget {
             fontWeight: FontWeight.w700,
           ),
         ),
-        const SizedBox(height: 8),
-        if (upcomingPlans.isEmpty)
+
+        const SizedBox(height: 12),
+        if (isLoading) 
+          Center(
+            child: CircularProgressIndicator(
+              color: orangeAccentColor,            
+            ),
+          )
+        else if (plans.isEmpty)
           Center(
             child: Text(
-              'No upcoming plans',
+              'You have no upcoming plans',
               style: TextStyle(
                 color: darktextColor.withAlpha(200),
                 fontSize: 16,
+                fontWeight: FontWeight.w600,
               ),
             ),
           )
         else
-        //this is temporary just for checking if the data is loading
           ListView.builder(
+            padding: EdgeInsets.all(0),
             shrinkWrap: true,
             physics: const NeverScrollableScrollPhysics(),
-            itemCount: upcomingPlans.length,
+            itemCount: plans.length,
             itemBuilder: (context, index) {
-              final plan = upcomingPlans[index];
+              final plan = plans[index];
               return Padding(
                 padding: const EdgeInsets.only(bottom: 8.0),
-                child: ListTile(
-                  title: Text(plan['title'] ?? 'No title'), 
-                  subtitle: Text(plan['description'] ?? ''),
-                ),
+                child: UpcomingplansCard(currentPlan: plan),
               );
             },
           ),
+        
         const SizedBox(height: 16),
+      
         Customfilledbutton(
           buttonHeight: 25,
           buttonWidth: double.infinity,
           buttonFillColor: orangeAccentColor,
           buttonRadius: 20,
           textColor: lighttextColor,
-          buttonLabel: 'See All >',
+          buttonLabel: 'See All',
           pressAction: () {},
         ),
       ],
