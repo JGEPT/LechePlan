@@ -4,7 +4,10 @@ import 'package:lecheplan/providers/theme_provider.dart';
 import 'package:lecheplan/widgets/modelWidgets/upcomingplans_card.dart';
 
 class PlansPage extends StatefulWidget {
-  const PlansPage({super.key});
+  final List<Plan> plans;
+  final bool isLoading;
+
+  const PlansPage({super.key, required this.plans, required this.isLoading});
 
   @override
   State<PlansPage> createState() => _PlansPageState();
@@ -12,9 +15,7 @@ class PlansPage extends StatefulWidget {
 
 class _PlansPageState extends State<PlansPage> {
   bool isActivityView = true;
-  bool isLoading = false;
   String? errorMsg;
-  List<Plan> plans = [];
   int? highlightedIndex; // Track hovered or selected card
   bool createHovered = false; // Track hover for Create button
   bool activityHover = false; // Track hover for Activity toggle
@@ -35,75 +36,9 @@ class _PlansPageState extends State<PlansPage> {
   @override
   void initState() {
     super.initState();
-    loadSamplePlans();
     final now = DateTime.now();
     calendarMonth = DateTime(now.year, now.month);
     selectedDay = DateTime(now.year, now.month, now.day);
-  }
-
-  void loadSamplePlans() async {
-    setState(() {
-      isLoading = true;
-      errorMsg = null;
-    });
-    await Future.delayed(const Duration(milliseconds: 500)); // Simulate loading
-    try {
-      plans = [
-        Plan(
-          planID: '1',
-          title: 'Video Game Shesh',
-          category: 'Gaming',
-          planDateTime: DateTime(2025, 5, 10, 23, 0),
-          participants: ['GroupName'],
-          tags: ['fun', 'night'],
-          avatarAssets: List.generate(
-            1,
-            (_) => 'assets/images/sampleAvatar.jpg',
-          ),
-        ),
-        Plan(
-          planID: '2',
-          title: 'Chicken Jockey',
-          category: 'Party',
-          planDateTime: DateTime(2025, 5, 10, 23, 0),
-          participants: ['GroupName', 'Person1'],
-          tags: ['chicken', 'jockey'],
-          avatarAssets: List.generate(
-            2,
-            (_) => 'assets/images/sampleAvatar.jpg',
-          ),
-        ),
-        Plan(
-          planID: '3',
-          title: 'Project Expo',
-          category: 'Project Presentation',
-          planDateTime: DateTime(2025, 5, 12, 19, 0),
-          participants: ['Block B', 'Block A', 'Block C'],
-          tags: ['Coding', 'Projects'],
-          avatarAssets: List.generate(
-            3,
-            (_) => 'assets/images/sampleAvatar.jpg',
-          ),
-        ),
-        Plan(
-          planID: '4',
-          title: 'Moalboal',
-          category: 'Travel',
-          planDateTime: DateTime(2025, 5, 15, 20, 0),
-          participants: ['Block B', 'James', 'Keane', 'Ishah', 'Hya'],
-          tags: ['movies', 'popcorn'],
-          avatarAssets: List.generate(
-            5,
-            (_) => 'assets/images/sampleAvatar.jpg',
-          ),
-        ),
-      ];
-    } catch (e) {
-      errorMsg = 'Failed to load plans.';
-    }
-    setState(() {
-      isLoading = false;
-    });
   }
 
   void _showMonthYearOverlay(BuildContext context) {
@@ -489,7 +424,7 @@ class _PlansPageState extends State<PlansPage> {
   }
 
   Widget _buildPlansList() {
-    if (isLoading) {
+    if (widget.isLoading) {
       return const Center(child: CircularProgressIndicator());
     }
     if (errorMsg != null) {
@@ -497,7 +432,7 @@ class _PlansPageState extends State<PlansPage> {
         child: Text(errorMsg!, style: const TextStyle(color: Colors.red)),
       );
     }
-    if (plans.isEmpty) {
+    if (widget.plans.isEmpty) {
       return const Center(
         child: Text(
           'No plans yet. Tap Create to add one!',
@@ -507,7 +442,7 @@ class _PlansPageState extends State<PlansPage> {
     }
     return ListView.separated(
       padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 10),
-      itemCount: plans.length,
+      itemCount: widget.plans.length,
       separatorBuilder: (_, __) => const SizedBox(height: 12),
       itemBuilder: (context, index) {
         return MouseRegion(
@@ -516,7 +451,7 @@ class _PlansPageState extends State<PlansPage> {
           child: GestureDetector(
             onTap: () => setState(() => highlightedIndex = index),
             child: UpcomingplansCard(
-              plan: plans[index],
+              plan: widget.plans[index],
               highlighted: highlightedIndex == index,
             ),
           ),
@@ -548,14 +483,14 @@ class _PlansPageState extends State<PlansPage> {
     }
     // Map of day -> plans
     final Map<int, List<Plan>> plansByDay = {};
-    for (final plan in plans) {
+    for (final plan in widget.plans) {
       if (plan.planDateTime.year == calendarMonth.year &&
           plan.planDateTime.month == calendarMonth.month) {
         plansByDay.putIfAbsent(plan.planDateTime.day, () => []).add(plan);
       }
     }
     // Show all plans below the calendar, sorted by date
-    final allPlansSorted = [...plans]
+    final allPlansSorted = [...widget.plans]
       ..sort((a, b) => a.planDateTime.compareTo(b.planDateTime));
     return Column(
       children: [
