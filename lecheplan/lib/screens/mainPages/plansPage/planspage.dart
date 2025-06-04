@@ -2,6 +2,11 @@ import 'package:flutter/material.dart';
 import 'package:lecheplan/models/plan_model.dart';
 import 'package:lecheplan/providers/theme_provider.dart';
 import 'package:lecheplan/widgets/modelWidgets/upcomingplans_card.dart';
+import 'package:lecheplan/widgets/modelWidgets/calendar_widget.dart';
+import 'package:lecheplan/widgets/modelWidgets/month_year_picker.dart';
+import 'package:lecheplan/widgets/modelWidgets/group_calendar_widget.dart'
+    as group_cal;
+import 'package:lecheplan/services/plans_services.dart';
 
 class PlansPage extends StatefulWidget {
   final List<Plan> plans;
@@ -32,20 +37,40 @@ class _PlansPageState extends State<PlansPage> {
   OverlayEntry? _monthYearOverlay;
   bool chevronHover = false;
   bool chevronPressed = false;
+  bool useGroupCalendar = false;
+  Set<String> selectedUsers = {};
+  List<Map<String, String>> allUsers = [];
 
   @override
   void initState() {
     super.initState();
+    _fetchAllUsers();
     final now = DateTime.now();
     calendarMonth = DateTime(now.year, now.month);
     selectedDay = DateTime(now.year, now.month, now.day);
+  }
+
+  Future<void> _fetchAllUsers() async {
+    final users = await fetchAllUsers();
+    setState(() {
+      allUsers =
+          users
+              .map(
+                (u) => {
+                  'username': (u['username'] ?? '').toString(),
+                  'profile_photo_url':
+                      (u['profile_photo_url'] ?? '').toString(),
+                },
+              )
+              .toList();
+    });
   }
 
   void _showMonthYearOverlay(BuildContext context) {
     if (_monthYearOverlay != null) return;
     _monthYearOverlay = OverlayEntry(
       builder:
-          (context) => _MonthYearPickerOverlay(
+          (context) => MonthYearPickerOverlay(
             initialMonth: calendarMonth.month,
             initialYear: calendarMonth.year,
             onCancel: () {
@@ -143,6 +168,17 @@ class _PlansPageState extends State<PlansPage> {
 
   @override
   Widget build(BuildContext context) {
+    // Use all users from the database for the filter UI
+    final List<String> allUsernames =
+        allUsers
+            .map((u) => u['username'] ?? '')
+            .where((u) => u.isNotEmpty)
+            .toList();
+    // If selectedUsers is empty (first load), select all by default
+    if (useGroupCalendar && selectedUsers.isEmpty && allUsernames.isNotEmpty) {
+      selectedUsers = Set<String>.from(allUsernames);
+    }
+
     return Scaffold(
       extendBodyBehindAppBar: true,
       backgroundColor: Colors.transparent,
@@ -415,7 +451,178 @@ class _PlansPageState extends State<PlansPage> {
                   ),
                 ),
               if (isActivityView) Expanded(child: _buildPlansList()),
-              if (!isActivityView) Expanded(child: _buildCalendarTab()),
+              if (!isActivityView)
+                Expanded(
+                  child: Column(
+                    children: [
+                      Padding(
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 16,
+                          vertical: 4,
+                        ),
+                        child: Row(
+                          mainAxisAlignment: MainAxisAlignment.end,
+                          children: [
+                            Text(
+                              'Group Calendar',
+                              style: TextStyle(fontWeight: FontWeight.w600),
+                            ),
+                            Switch(
+                              value: useGroupCalendar,
+                              onChanged: (val) {
+                                setState(() {
+                                  useGroupCalendar = val;
+                                  if (val &&
+                                      selectedUsers.isEmpty &&
+                                      allUsernames.isNotEmpty) {
+                                    selectedUsers = Set<String>.from(
+                                      allUsernames,
+                                    );
+                                  }
+                                });
+                              },
+                              activeColor: orangeAccentColor,
+                            ),
+                          ],
+                        ),
+                      ),
+                      if (useGroupCalendar && allUsernames.isNotEmpty)
+                        Padding(
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 16,
+                            vertical: 4,
+                          ),
+                          child: SingleChildScrollView(
+                            scrollDirection: Axis.horizontal,
+                            child: Row(
+                              children:
+                                  allUsernames.map((user) {
+                                    final selected = selectedUsers.contains(
+                                      user,
+                                    );
+                                    final avatarUrl = _getAvatarForUser(user);
+                                    return GestureDetector(
+                                      onTap: () {
+                                        setState(() {
+                                          if (selected) {
+                                            selectedUsers.remove(user);
+                                          } else {
+                                            selectedUsers.add(user);
+                                          }
+                                        });
+                                      },
+                                      child: Padding(
+                                        padding: const EdgeInsets.symmetric(
+                                          horizontal: 6,
+                                        ),
+                                        child: Column(
+                                          mainAxisSize: MainAxisSize.min,
+                                          children: [
+                                            Container(
+                                              decoration: BoxDecoration(
+                                                shape: BoxShape.circle,
+                                                border: Border.all(
+                                                  color:
+                                                      selected
+                                                          ? orangeAccentColor
+                                                          : Colors.transparent,
+                                                  width: 3,
+                                                ),
+                                              ),
+                                              child: CircleAvatar(
+                                                radius: 22,
+                                                backgroundImage:
+                                                    (avatarUrl != null &&
+                                                            avatarUrl
+                                                                .isNotEmpty)
+                                                        ? NetworkImage(
+                                                          avatarUrl,
+                                                        )
+                                                        : const AssetImage(
+                                                              'assets/images/sampleAvatar.jpg',
+                                                            )
+                                                            as ImageProvider,
+                                              ),
+                                            ),
+                                            const SizedBox(height: 4),
+                                            Text(
+                                              user,
+                                              style: TextStyle(
+                                                fontSize: 13,
+                                                fontWeight: FontWeight.w600,
+                                                color:
+                                                    selected
+                                                        ? orangeAccentColor
+                                                        : darktextColor,
+                                              ),
+                                              overflow: TextOverflow.ellipsis,
+                                              maxLines: 1,
+                                            ),
+                                          ],
+                                        ),
+                                      ),
+                                    );
+                                  }).toList(),
+                            ),
+                          ),
+                        ),
+                      Expanded(
+                        child:
+                            useGroupCalendar
+                                ? group_cal.GroupCalendarWidget(
+                                  plans: widget.plans,
+                                  calendarMonth: calendarMonth,
+                                  selectedDay: selectedDay,
+                                  onMonthChanged: (newMonth) {
+                                    setState(() {
+                                      calendarMonth = newMonth;
+                                    });
+                                  },
+                                  onDaySelected: (day) {
+                                    setState(() {
+                                      selectedDay = day;
+                                    });
+                                  },
+                                  highlightedCalendarIndex:
+                                      highlightedCalendarIndex,
+                                  onHighlightCard: (idx) {
+                                    setState(() {
+                                      highlightedCalendarIndex = idx;
+                                    });
+                                  },
+                                  onShowMonthYearPicker:
+                                      () => _showMonthYearOverlay(context),
+                                  totalSelected: selectedUsers.length,
+                                  selectedUsers: selectedUsers,
+                                )
+                                : CalendarWidget(
+                                  plans: widget.plans,
+                                  calendarMonth: calendarMonth,
+                                  selectedDay: selectedDay,
+                                  onMonthChanged: (newMonth) {
+                                    setState(() {
+                                      calendarMonth = newMonth;
+                                    });
+                                  },
+                                  onDaySelected: (day) {
+                                    setState(() {
+                                      selectedDay = day;
+                                    });
+                                  },
+                                  highlightedCalendarIndex:
+                                      highlightedCalendarIndex,
+                                  onHighlightCard: (idx) {
+                                    setState(() {
+                                      highlightedCalendarIndex = idx;
+                                    });
+                                  },
+                                  onShowMonthYearPicker:
+                                      () => _showMonthYearOverlay(context),
+                                ),
+                      ),
+                    ],
+                  ),
+                ),
             ],
           ),
         ),
@@ -460,423 +667,6 @@ class _PlansPageState extends State<PlansPage> {
     );
   }
 
-  Widget _buildCalendarTab() {
-    final now = DateTime.now();
-    final firstDayOfMonth = DateTime(
-      calendarMonth.year,
-      calendarMonth.month,
-      1,
-    );
-    final lastDayOfMonth = DateTime(
-      calendarMonth.year,
-      calendarMonth.month + 1,
-      0,
-    );
-    final firstWeekday = firstDayOfMonth.weekday % 7; // Sunday=0
-    final daysInMonth = lastDayOfMonth.day;
-    final days = <DateTime>[];
-    for (int i = 0; i < firstWeekday; i++) {
-      days.add(DateTime(0)); // Empty days
-    }
-    for (int i = 1; i <= daysInMonth; i++) {
-      days.add(DateTime(calendarMonth.year, calendarMonth.month, i));
-    }
-    // Map of day -> plans
-    final Map<int, List<Plan>> plansByDay = {};
-    for (final plan in widget.plans) {
-      if (plan.planDateTime.year == calendarMonth.year &&
-          plan.planDateTime.month == calendarMonth.month) {
-        plansByDay.putIfAbsent(plan.planDateTime.day, () => []).add(plan);
-      }
-    }
-    // Show all plans below the calendar, sorted by date
-    final allPlansSorted = [...widget.plans]
-      ..sort((a, b) => a.planDateTime.compareTo(b.planDateTime));
-    return Column(
-      children: [
-        Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-          child: Container(
-            decoration: BoxDecoration(
-              color: Colors.white,
-              borderRadius: BorderRadius.circular(18),
-              boxShadow: [defaultBoxShadow],
-            ),
-            child: Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 16),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Row(
-                    children: [
-                      Text(
-                        _monthYearString(calendarMonth),
-                        style: TextStyle(
-                          fontWeight: FontWeight.w700,
-                          fontSize: 20,
-                          color: darktextColor,
-                          fontFamily: 'Quicksand',
-                        ),
-                      ),
-                      const SizedBox(width: 6),
-                      MouseRegion(
-                        onEnter: (_) => setState(() => chevronHover = true),
-                        onExit:
-                            (_) => setState(() {
-                              chevronHover = false;
-                              chevronPressed = false;
-                            }),
-                        child: GestureDetector(
-                          onTapDown:
-                              (_) => setState(() => chevronPressed = true),
-                          onTapUp:
-                              (_) => setState(() => chevronPressed = false),
-                          onTapCancel:
-                              () => setState(() => chevronPressed = false),
-                          onTap: () => _showMonthYearOverlay(context),
-                          child: AnimatedScale(
-                            scale:
-                                chevronPressed
-                                    ? 0.92
-                                    : (chevronHover ? 1.12 : 1.0),
-                            duration: const Duration(milliseconds: 120),
-                            child: AnimatedOpacity(
-                              opacity:
-                                  chevronHover || chevronPressed ? 0.7 : 1.0,
-                              duration: const Duration(milliseconds: 120),
-                              child: Material(
-                                color: Colors.transparent,
-                                shape: const CircleBorder(),
-                                child: InkWell(
-                                  customBorder: const CircleBorder(),
-                                  splashColor: orangeAccentColor.withAlpha(60),
-                                  onTap: () => _showMonthYearOverlay(context),
-                                  child: Padding(
-                                    padding: const EdgeInsets.all(4.0),
-                                    child: Icon(
-                                      Icons.chevron_right,
-                                      color: orangeAccentColor,
-                                      size: 24,
-                                    ),
-                                  ),
-                                ),
-                              ),
-                            ),
-                          ),
-                        ),
-                      ),
-                      const Spacer(),
-                      // Left arrow button with feedback
-                      MouseRegion(
-                        onEnter: (_) => setState(() => leftArrowHover = true),
-                        onExit: (_) => setState(() => leftArrowHover = false),
-                        child: GestureDetector(
-                          onTapDown:
-                              (_) => setState(() => leftArrowHover = true),
-                          onTapUp:
-                              (_) => setState(() => leftArrowHover = false),
-                          onTapCancel:
-                              () => setState(() => leftArrowHover = false),
-                          onTap: () {
-                            setState(() {
-                              calendarMonth = DateTime(
-                                calendarMonth.year,
-                                calendarMonth.month - 1,
-                              );
-                            });
-                          },
-                          child: AnimatedScale(
-                            scale: leftArrowHover ? 1.15 : 1.0,
-                            duration: const Duration(milliseconds: 120),
-                            child: AnimatedOpacity(
-                              opacity: leftArrowHover ? 0.7 : 1.0,
-                              duration: const Duration(milliseconds: 120),
-                              child: Icon(
-                                Icons.chevron_left,
-                                color:
-                                    leftArrowHover
-                                        ? orangeAccentColor.withAlpha(200)
-                                        : orangeAccentColor,
-                                size: 28,
-                              ),
-                            ),
-                          ),
-                        ),
-                      ),
-                      const SizedBox(width: 2),
-                      // Right arrow button with feedback
-                      MouseRegion(
-                        onEnter: (_) => setState(() => rightArrowHover = true),
-                        onExit: (_) => setState(() => rightArrowHover = false),
-                        child: GestureDetector(
-                          onTapDown:
-                              (_) => setState(() => rightArrowHover = true),
-                          onTapUp:
-                              (_) => setState(() => rightArrowHover = false),
-                          onTapCancel:
-                              () => setState(() => rightArrowHover = false),
-                          onTap: () {
-                            setState(() {
-                              calendarMonth = DateTime(
-                                calendarMonth.year,
-                                calendarMonth.month + 1,
-                              );
-                            });
-                          },
-                          child: AnimatedScale(
-                            scale: rightArrowHover ? 1.15 : 1.0,
-                            duration: const Duration(milliseconds: 120),
-                            child: AnimatedOpacity(
-                              opacity: rightArrowHover ? 0.7 : 1.0,
-                              duration: const Duration(milliseconds: 120),
-                              child: Icon(
-                                Icons.chevron_right,
-                                color:
-                                    rightArrowHover
-                                        ? orangeAccentColor.withAlpha(200)
-                                        : orangeAccentColor,
-                                size: 28,
-                              ),
-                            ),
-                          ),
-                        ),
-                      ),
-                      const SizedBox(width: 6),
-                      // Add button with feedback
-                      MouseRegion(
-                        onEnter: (_) => setState(() => addButtonHover = true),
-                        onExit: (_) => setState(() => addButtonHover = false),
-                        child: GestureDetector(
-                          onTapDown:
-                              (_) => setState(() => addButtonHover = true),
-                          onTapUp:
-                              (_) => setState(() => addButtonHover = false),
-                          onTapCancel:
-                              () => setState(() => addButtonHover = false),
-                          onTap: () => _showPlanCreationModal(context),
-                          child: AnimatedScale(
-                            scale: addButtonHover ? 1.08 : 1.0,
-                            duration: const Duration(milliseconds: 120),
-                            child: AnimatedContainer(
-                              duration: const Duration(milliseconds: 120),
-                              width: 28,
-                              height: 28,
-                              decoration: BoxDecoration(
-                                color:
-                                    addButtonHover
-                                        ? greyAccentColor
-                                        : lightAccentColor,
-                                borderRadius: BorderRadius.circular(14),
-                              ),
-                              child: Icon(
-                                Icons.add,
-                                color:
-                                    addButtonHover
-                                        ? orangeAccentColor
-                                        : darktextColor,
-                                size: 18,
-                              ),
-                            ),
-                          ),
-                        ),
-                      ),
-                    ],
-                  ),
-                  const SizedBox(height: 8),
-                  AnimatedSwitcher(
-                    duration: const Duration(milliseconds: 250),
-                    transitionBuilder:
-                        (child, animation) => FadeTransition(
-                          opacity: animation,
-                          child: SlideTransition(
-                            position: Tween<Offset>(
-                              begin: const Offset(0.1, 0),
-                              end: Offset.zero,
-                            ).animate(animation),
-                            child: child,
-                          ),
-                        ),
-                    child: LayoutBuilder(
-                      key: ValueKey(
-                        '${calendarMonth.year}-${calendarMonth.month}',
-                      ),
-                      builder: (context, constraints) {
-                        final double margin = 6; // slight margin on each side
-                        final double gridWidth =
-                            constraints.maxWidth - margin * 2;
-                        return Column(
-                          children: [
-                            Row(
-                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                              children: const [
-                                _CalendarDayLabel('SUN'),
-                                _CalendarDayLabel('MON'),
-                                _CalendarDayLabel('TUE'),
-                                _CalendarDayLabel('WED'),
-                                _CalendarDayLabel('THU'),
-                                _CalendarDayLabel('FRI'),
-                                _CalendarDayLabel('SAT'),
-                              ],
-                            ),
-                            const SizedBox(height: 2),
-                            SizedBox(
-                              width: gridWidth,
-                              child: GridView.builder(
-                                shrinkWrap: true,
-                                physics: const NeverScrollableScrollPhysics(),
-                                gridDelegate:
-                                    const SliverGridDelegateWithFixedCrossAxisCount(
-                                      crossAxisCount: 7,
-                                      mainAxisSpacing: 0,
-                                      crossAxisSpacing: 0,
-                                      childAspectRatio: 1.1,
-                                    ),
-                                itemCount: days.length,
-                                itemBuilder: (context, i) {
-                                  final day = days[i];
-                                  if (day.year == 0) {
-                                    return const SizedBox();
-                                  }
-                                  final isToday =
-                                      day.year == now.year &&
-                                      day.month == now.month &&
-                                      day.day == now.day;
-                                  final isSelected =
-                                      selectedDay != null &&
-                                      day.year == selectedDay!.year &&
-                                      day.month == selectedDay!.month &&
-                                      day.day == selectedDay!.day;
-                                  final plansForDay = plansByDay[day.day] ?? [];
-                                  return GestureDetector(
-                                    onTap: () {
-                                      setState(() {
-                                        selectedDay = day;
-                                      });
-                                    },
-                                    child: Stack(
-                                      alignment: Alignment.center,
-                                      children: [
-                                        Column(
-                                          mainAxisAlignment:
-                                              MainAxisAlignment.center,
-                                          children: [
-                                            Container(
-                                              width: 36,
-                                              height: 36,
-                                              decoration: BoxDecoration(
-                                                color:
-                                                    isToday
-                                                        ? orangeAccentColor
-                                                        : isSelected
-                                                        ? darktextColor
-                                                            .withOpacity(0.08)
-                                                        : Colors.transparent,
-                                                shape: BoxShape.circle,
-                                              ),
-                                              child: Center(
-                                                child: Text(
-                                                  '${day.day}',
-                                                  style: TextStyle(
-                                                    color:
-                                                        isToday
-                                                            ? lighttextColor
-                                                            : darktextColor,
-                                                    fontWeight: FontWeight.w700,
-                                                    fontSize: 18,
-                                                    fontFamily: 'Quicksand',
-                                                  ),
-                                                ),
-                                              ),
-                                            ),
-                                          ],
-                                        ),
-                                        if (plansForDay.isNotEmpty)
-                                          Positioned(
-                                            bottom: 0,
-                                            child:
-                                                plansForDay.length == 1
-                                                    ? Container(
-                                                      width: 7,
-                                                      height: 7,
-                                                      decoration: BoxDecoration(
-                                                        color:
-                                                            orangeAccentColor,
-                                                        shape: BoxShape.circle,
-                                                      ),
-                                                    )
-                                                    : Icon(
-                                                      Icons.workspaces,
-                                                      color: orangeAccentColor,
-                                                      size: 15,
-                                                    ),
-                                          ),
-                                      ],
-                                    ),
-                                  );
-                                },
-                              ),
-                            ),
-                          ],
-                        );
-                      },
-                    ),
-                  ),
-                ],
-              ),
-            ),
-          ),
-        ),
-        const SizedBox(height: 10),
-        // Always show all plans below the calendar, with pop/hover effect and scrollable above bottom nav
-        Expanded(
-          child: Padding(
-            padding: EdgeInsets.only(
-              bottom: MediaQuery.of(context).padding.bottom + 70,
-            ),
-            child:
-                allPlansSorted.isEmpty
-                    ? const Center(
-                      child: Text(
-                        'No plans for this month.',
-                        style: TextStyle(fontWeight: FontWeight.w600),
-                      ),
-                    )
-                    : ListView.separated(
-                      padding: const EdgeInsets.symmetric(
-                        horizontal: 10,
-                        vertical: 10,
-                      ),
-                      itemCount: allPlansSorted.length,
-                      separatorBuilder: (_, __) => const SizedBox(height: 12),
-                      itemBuilder: (context, index) {
-                        return MouseRegion(
-                          onEnter:
-                              (_) => setState(
-                                () => highlightedCalendarIndex = index,
-                              ),
-                          onExit:
-                              (_) => setState(
-                                () => highlightedCalendarIndex = null,
-                              ),
-                          child: GestureDetector(
-                            onTap:
-                                () => setState(
-                                  () => highlightedCalendarIndex = index,
-                                ),
-                            child: UpcomingplansCard(
-                              plan: allPlansSorted[index],
-                              highlighted: highlightedCalendarIndex == index,
-                            ),
-                          ),
-                        );
-                      },
-                    ),
-          ),
-        ),
-      ],
-    );
-  }
-
   String _monthYearString(DateTime date) {
     const months = [
       '',
@@ -894,6 +684,28 @@ class _PlansPageState extends State<PlansPage> {
       'December',
     ];
     return '${months[date.month]} ${date.year}';
+  }
+
+  String? _getAvatarForUser(String username) {
+    // Try allUsers first
+    final user = allUsers.firstWhere(
+      (u) => u['username'] == username,
+      orElse: () => {},
+    );
+    if (user.isNotEmpty && (user['profile_photo_url']?.isNotEmpty ?? false)) {
+      return user['profile_photo_url'];
+    }
+    // Fallback to plans
+    for (final plan in widget.plans) {
+      if (plan.participants.contains(username) &&
+          plan.profilePhotoUrls.isNotEmpty) {
+        final idx = plan.participants.indexOf(username);
+        if (idx >= 0 && idx < plan.profilePhotoUrls.length) {
+          return plan.profilePhotoUrls[idx];
+        }
+      }
+    }
+    return null;
   }
 }
 
@@ -914,296 +726,6 @@ class _CalendarDayLabel extends StatelessWidget {
           ),
         ),
       ),
-    );
-  }
-}
-
-// Overlay Month/Year Picker
-class _MonthYearPickerOverlay extends StatefulWidget {
-  final int initialMonth;
-  final int initialYear;
-  final void Function() onCancel;
-  final void Function(int year, int month) onSelect;
-  const _MonthYearPickerOverlay({
-    required this.initialMonth,
-    required this.initialYear,
-    required this.onCancel,
-    required this.onSelect,
-  });
-  @override
-  State<_MonthYearPickerOverlay> createState() =>
-      _MonthYearPickerOverlayState();
-}
-
-class _MonthYearPickerOverlayState extends State<_MonthYearPickerOverlay> {
-  late int selectedMonth;
-  late int selectedYear;
-  bool showYearPicker = false;
-  FixedExtentScrollController? _fixedExtentController;
-
-  @override
-  void initState() {
-    super.initState();
-    selectedMonth = widget.initialMonth;
-    selectedYear = widget.initialYear;
-    final yearList = List.generate(21, (i) => widget.initialYear - 10 + i);
-    final initialIndex = yearList.indexOf(selectedYear);
-    _fixedExtentController = FixedExtentScrollController(
-      initialItem: initialIndex >= 0 ? initialIndex : 0,
-    );
-  }
-
-  @override
-  void dispose() {
-    _fixedExtentController?.dispose();
-    super.dispose();
-  }
-
-  void _handleYearSelection(int year) {
-    setState(() {
-      selectedYear = year;
-      showYearPicker = false;
-    });
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    final months = [
-      'January',
-      'February',
-      'March',
-      'April',
-      'May',
-      'June',
-      'July',
-      'August',
-      'September',
-      'October',
-      'November',
-      'December',
-    ];
-    final yearList = List.generate(21, (i) => widget.initialYear - 10 + i);
-
-    return Stack(
-      children: [
-        Positioned.fill(
-          child: GestureDetector(
-            onTap: widget.onCancel,
-            child: Container(color: const Color.fromARGB(60, 0, 0, 0)),
-          ),
-        ),
-        Center(
-          child: Material(
-            color: Colors.transparent,
-            child: Container(
-              width: showYearPicker ? 200 : 320,
-              padding: const EdgeInsets.all(20),
-              decoration: BoxDecoration(
-                color: Colors.white,
-                borderRadius: BorderRadius.circular(18),
-                boxShadow: [defaultBoxShadow],
-              ),
-              child:
-                  showYearPicker
-                      ? Column(
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                          Container(
-                            height: 75,
-                            decoration: BoxDecoration(
-                              color: greyAccentColor,
-                              borderRadius: BorderRadius.circular(12),
-                              boxShadow: [defaultBoxShadow],
-                            ),
-                            child: ListWheelScrollView.useDelegate(
-                              controller: _fixedExtentController,
-                              itemExtent: 22,
-                              diameterRatio: 1.2,
-                              physics: const FixedExtentScrollPhysics(),
-                              onSelectedItemChanged:
-                                  (i) => setState(
-                                    () => selectedYear = yearList[i],
-                                  ),
-                              childDelegate: ListWheelChildBuilderDelegate(
-                                childCount: yearList.length,
-                                builder:
-                                    (context, i) => Center(
-                                      child: AnimatedContainer(
-                                        duration: const Duration(
-                                          milliseconds: 120,
-                                        ),
-                                        curve: Curves.easeOut,
-                                        decoration: BoxDecoration(
-                                          color:
-                                              yearList[i] == selectedYear
-                                                  ? orangeAccentColor.withAlpha(
-                                                    40,
-                                                  )
-                                                  : Colors.transparent,
-                                          borderRadius: BorderRadius.circular(
-                                            8,
-                                          ),
-                                        ),
-                                        padding: const EdgeInsets.symmetric(
-                                          horizontal: 6,
-                                          vertical: 1,
-                                        ),
-                                        child: Text(
-                                          '${yearList[i]}',
-                                          style: TextStyle(
-                                            fontWeight:
-                                                yearList[i] == selectedYear
-                                                    ? FontWeight.bold
-                                                    : FontWeight.w600,
-                                            color:
-                                                yearList[i] == selectedYear
-                                                    ? orangeAccentColor
-                                                    : darktextColor,
-                                            fontSize:
-                                                yearList[i] == selectedYear
-                                                    ? 18
-                                                    : 16,
-                                            shadows:
-                                                yearList[i] == selectedYear
-                                                    ? [defaultShadow]
-                                                    : null,
-                                          ),
-                                          textAlign: TextAlign.center,
-                                        ),
-                                      ),
-                                    ),
-                              ),
-                            ),
-                          ),
-                          const SizedBox(height: 10),
-                          Row(
-                            mainAxisAlignment: MainAxisAlignment.end,
-                            children: [
-                              TextButton(
-                                onPressed: widget.onCancel,
-                                child: Text(
-                                  'Cancel',
-                                  style: TextStyle(color: darktextColor),
-                                ),
-                              ),
-                              const SizedBox(width: 10),
-                              ElevatedButton(
-                                style: ElevatedButton.styleFrom(
-                                  backgroundColor: orangeAccentColor,
-                                  foregroundColor: lighttextColor,
-                                  shape: RoundedRectangleBorder(
-                                    borderRadius: BorderRadius.circular(10),
-                                  ),
-                                  padding: const EdgeInsets.symmetric(
-                                    horizontal: 12,
-                                    vertical: 8,
-                                  ),
-                                ),
-                                onPressed:
-                                    () => _handleYearSelection(selectedYear),
-                                child: const Text('Select'),
-                              ),
-                            ],
-                          ),
-                        ],
-                      )
-                      : Column(
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                          Row(
-                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                            children: [
-                              IconButton(
-                                icon: Icon(
-                                  Icons.chevron_left,
-                                  color: orangeAccentColor,
-                                ),
-                                onPressed: () => setState(() => selectedYear--),
-                              ),
-                              GestureDetector(
-                                onTap:
-                                    () => setState(() => showYearPicker = true),
-                                child: Text(
-                                  '$selectedYear',
-                                  style: TextStyle(
-                                    fontWeight: FontWeight.w700,
-                                    fontSize: 18,
-                                    color: darktextColor,
-                                    decoration: TextDecoration.underline,
-                                  ),
-                                ),
-                              ),
-                              IconButton(
-                                icon: Icon(
-                                  Icons.chevron_right,
-                                  color: orangeAccentColor,
-                                ),
-                                onPressed: () => setState(() => selectedYear++),
-                              ),
-                            ],
-                          ),
-                          const SizedBox(height: 10),
-                          Wrap(
-                            spacing: 8,
-                            runSpacing: 8,
-                            children: List.generate(
-                              12,
-                              (i) => ChoiceChip(
-                                label: Text(
-                                  months[i],
-                                  style: TextStyle(
-                                    fontWeight: FontWeight.w600,
-                                    color:
-                                        selectedMonth == i + 1
-                                            ? lighttextColor
-                                            : darktextColor,
-                                  ),
-                                ),
-                                selected: selectedMonth == i + 1,
-                                selectedColor: orangeAccentColor,
-                                backgroundColor: greyAccentColor,
-                                showCheckmark: false,
-                                onSelected:
-                                    (_) =>
-                                        setState(() => selectedMonth = i + 1),
-                              ),
-                            ),
-                          ),
-                          const SizedBox(height: 18),
-                          Row(
-                            mainAxisAlignment: MainAxisAlignment.end,
-                            children: [
-                              TextButton(
-                                onPressed: widget.onCancel,
-                                child: Text(
-                                  'Cancel',
-                                  style: TextStyle(color: darktextColor),
-                                ),
-                              ),
-                              const SizedBox(width: 10),
-                              ElevatedButton(
-                                style: ElevatedButton.styleFrom(
-                                  backgroundColor: orangeAccentColor,
-                                  foregroundColor: lighttextColor,
-                                  shape: RoundedRectangleBorder(
-                                    borderRadius: BorderRadius.circular(10),
-                                  ),
-                                ),
-                                onPressed:
-                                    () => widget.onSelect(
-                                      selectedYear,
-                                      selectedMonth,
-                                    ),
-                                child: const Text('Select'),
-                              ),
-                            ],
-                          ),
-                        ],
-                      ),
-            ),
-          ),
-        ),
-      ],
     );
   }
 }

@@ -48,3 +48,15 @@ Future<List<Map<String, dynamic>>> fetchAllUserPlans() async {
     return []; // Return empty list on error
   }
 }
+
+Future<List<Map<String, dynamic>>> fetchAllUsers() async {
+  try {
+    final response = await Supabase.instance.client
+        .from('users')
+        .select('username, profile_photo_url');
+    return (response as List).map((e) => e as Map<String, dynamic>).toList();
+  } catch (error) {
+    _mainhubLogger.warning(error);
+    return [];
+  }
+}
