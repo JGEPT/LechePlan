@@ -26,6 +26,7 @@ class _NotifsAppBar extends StatelessWidget {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
+        titleSpacing: 1,
         toolbarHeight: 70,
         leading: BackButton(onPressed: () {context.pop();},), //will go back to prev if used context.push
         backgroundColor: pinkishBackgroundColor,
@@ -49,7 +50,7 @@ class _NotifsAppBar extends StatelessWidget {
         ],
         
         bottom: PreferredSize(
-          preferredSize: const Size.fromHeight(40),
+          preferredSize: const Size.fromHeight(50),
           //use contianer to determine the look of the actual tab bar
           child: Container(
             margin: const EdgeInsets.only(left: 16, right: 16, top: 0, bottom: 8),

@@ -5,17 +5,15 @@ class CustomIconTextButton extends StatelessWidget {
   final String label;
   final IconData buttonIcon;
   final double iconSize;
+  final VoidCallback pressAction;
 
   const CustomIconTextButton({
     super.key,
     required this.label,
     required this.buttonIcon,
     required this.iconSize,
+    required this.pressAction, 
   });
-
-  void goToPage() {
-    return;
-  }
 
   @override
   Widget build(BuildContext context) {
@@ -24,7 +22,7 @@ class CustomIconTextButton extends StatelessWidget {
         color: lightGreyColor,
         borderRadius: BorderRadius.circular(20),
         child: InkWell( //adds that animation when pressed
-          onTap: goToPage,
+          onTap: pressAction,
           borderRadius: BorderRadius.circular(20),
           child: Container(
             padding: EdgeInsets.all(10),
