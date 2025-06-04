@@ -13,9 +13,11 @@ import 'package:lecheplan/screens/mainPages/profilePage/profilepage.dart';
 
 //model imports
 import 'package:lecheplan/models/plan_model.dart';
+import 'package:lecheplan/models/group_model.dart';
 
 //services imports
 import 'package:lecheplan/services/plans_services.dart';
+import 'package:lecheplan/services/groups_services.dart';
 
 final Logger _homePageLogger = Logger('homePageLogger');
 
@@ -28,12 +30,14 @@ class Mainhubpage extends StatefulWidget {
 
 class _MainhubpageState extends State<Mainhubpage> {
   List<Plan> plans = [];
+  List<Group> groups = [];
   bool isLoading = true;
 
   @override
   void initState() {
     super.initState();
     _loadPlans();
+    _loadGroups();
   }
 
   Future<void> _loadPlans() async {
@@ -55,6 +59,36 @@ class _MainhubpageState extends State<Mainhubpage> {
         isLoading = false;
       });
       _homePageLogger.warning('Error loading plans: $error');
+    }
+  }
+
+  Future<void> _loadGroups() async {
+    try {
+      final groupMaps = await fetchAllGroups();
+      List<Group> loadedGroups = [];
+      for (final groupMap in groupMaps) {
+        final groupId = groupMap['group_id'] ?? groupMap['groupID'];
+        // Fetch member count and member names for each group
+        final memberCount = await fetchGroupMemberCount(groupId);
+        final members = await fetchGroupMembers(groupId);
+        final memberNames =
+            members.map((m) => m['username'] as String? ?? '').toList();
+        loadedGroups.add(
+          Group(
+            groupID: groupId,
+            groupName: groupMap['groupname'] ?? groupMap['groupName'] ?? '',
+            groupProfile: groupMap['group_profile'] ?? '',
+            memberCount: memberCount,
+            members: memberNames,
+            // Optionally set activity if available
+          ),
+        );
+      }
+      setState(() {
+        groups = loadedGroups;
+      });
+    } catch (error) {
+      _homePageLogger.warning('Error loading groups: $error');
     }
   }
 
@@ -136,13 +170,13 @@ class _MainhubpageState extends State<Mainhubpage> {
         isLoading: isLoading,
         onProfileTap: goToProfileTab,
       ),
-      PeoplePage(onProfileTap: goToProfileTab),
+      PeoplePage(onProfileTap: goToProfileTab, groups: groups),
       PlansPage(plans: plans, isLoading: isLoading),
       ProfilePage(),
     ];
 
     return Stack(
-      children: [ 
+      children: [
         _BackgroundContainer(
           widgetOptions: widgetOptions,
           selectedIndex: _selectedIndex,
@@ -205,11 +239,7 @@ class _BackgroundContainer extends StatelessWidget {
         alignment: Alignment.center,
         width: double.infinity,
         height: double.infinity,
-        child: Stack(
-          children: [
-            widgetOptions.elementAt(_selectedIndex),
-          ],
-        ),
+        child: Stack(children: [widgetOptions.elementAt(_selectedIndex)]),
       ),
     );
   }
