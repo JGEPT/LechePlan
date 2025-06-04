@@ -129,7 +129,7 @@ class _UpcomingplansCardState extends State<UpcomingplansCard> {
                 ),
                 const SizedBox(width: 10),
                 _AvatarsDisplay(
-                  avatarAssets: widget.plan.avatarAssets,
+                  profilePhotoUrls: widget.plan.profilePhotoUrls,
                   participantCount: widget.plan.participants.length,
                 ),
               ],
@@ -168,11 +168,11 @@ class _UpcomingplansCardState extends State<UpcomingplansCard> {
 }
 
 class _AvatarsDisplay extends StatelessWidget {
-  final List<String> avatarAssets;
+  final List<String> profilePhotoUrls;
   final int participantCount;
 
   const _AvatarsDisplay({
-    required this.avatarAssets,
+    required this.profilePhotoUrls,
     required this.participantCount,
   });
 
@@ -184,11 +184,16 @@ class _AvatarsDisplay extends StatelessWidget {
 
     List<Widget> avatarWidgets = [];
     for (int i = 0; i < showCount; i++) {
+      final url = (i < profilePhotoUrls.length) ? profilePhotoUrls[i] : null;
       avatarWidgets.add(
         Positioned(
           left: i * overlap,
           child: CircleAvatar(
-            backgroundImage: AssetImage(avatarAssets[i]),
+            backgroundImage:
+                (url != null && url.isNotEmpty)
+                    ? NetworkImage(url)
+                    : const AssetImage('assets/images/sampleAvatar.jpg')
+                        as ImageProvider,
             radius: 18,
           ),
         ),
