@@ -10,20 +10,21 @@ import 'package:lecheplan/models/plan_model.dart';
 //widget imports
 import 'package:lecheplan/widgets/reusableWidgets/custom_filledbutton.dart';
 import 'package:lecheplan/screens/mainPages/profilePage/profilepage.dart';
+import 'package:lecheplan/widgets/modelWidgets/upcomingplans_card.dart';
 
 class HomePage extends StatefulWidget {
   final List<Plan> plans;
   final bool isLoading;
   final VoidCallback? onProfileTap;
-  const HomePage({Key? key, this.onProfileTap}) : super(key: key);
-  
+
   const HomePage({
     super.key,
     required this.plans,
     required this.isLoading,
+    this.onProfileTap,
   });
 
-  @override  
+  @override
   State<HomePage> createState() => _HomePageState();
 }
 
@@ -40,10 +41,7 @@ class _HomePageState extends State<HomePage> {
       child: Column(
         children: [
           _HeaderContent(onProfileTap: widget.onProfileTap),
-          _MainContainer(
-            isLoading: widget.isLoading,
-            plans: widget.plans,          
-          ),
+          _MainContainer(isLoading: widget.isLoading, plans: widget.plans),
         ],
       ),
     );
@@ -134,10 +132,7 @@ class _MainContainer extends StatelessWidget {
   final bool isLoading;
   final List<Plan> plans;
 
-  const _MainContainer({
-    required this.isLoading,
-    required this.plans,
-  });
+  const _MainContainer({required this.isLoading, required this.plans});
 
   @override
   Widget build(BuildContext context) {
@@ -156,8 +151,8 @@ class _MainContainer extends StatelessWidget {
           child: Column(
             children: [
               _ComingUpSection(isLoading: isLoading, plans: plans),
-              
-              const SizedBox(height: 20,),
+
+              const SizedBox(height: 20),
 
               const _SuggestedForYouSection(),
             ],
@@ -172,12 +167,7 @@ class _ComingUpSection extends StatelessWidget {
   final List<Plan> plans;
   final bool isLoading;
 
-  const _ComingUpSection(
-    {
-      required this.plans, 
-      required this.isLoading,
-      }
-    );
+  const _ComingUpSection({required this.plans, required this.isLoading});
 
   @override
   Widget build(BuildContext context) {
@@ -194,12 +184,8 @@ class _ComingUpSection extends StatelessWidget {
         ),
 
         const SizedBox(height: 12),
-        if (isLoading) 
-          Center(
-            child: CircularProgressIndicator(
-              color: orangeAccentColor,            
-            ),
-          )
+        if (isLoading)
+          Center(child: CircularProgressIndicator(color: orangeAccentColor))
         else if (plans.isEmpty)
           Center(
             child: Text(
@@ -225,9 +211,9 @@ class _ComingUpSection extends StatelessWidget {
               );
             },
           ),
-        
+
         const SizedBox(height: 16),
-      
+
         Customfilledbutton(
           buttonHeight: 25,
           buttonWidth: double.infinity,
