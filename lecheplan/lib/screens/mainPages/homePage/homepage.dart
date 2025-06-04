@@ -9,11 +9,13 @@ import 'package:lecheplan/models/plan_model.dart';
 
 //widget imports
 import 'package:lecheplan/widgets/reusableWidgets/custom_filledbutton.dart';
-import 'package:lecheplan/widgets/modelWidgets/upcomingplans_card.dart';
+import 'package:lecheplan/screens/mainPages/profilePage/profilepage.dart';
 
 class HomePage extends StatefulWidget {
   final List<Plan> plans;
   final bool isLoading;
+  final VoidCallback? onProfileTap;
+  const HomePage({Key? key, this.onProfileTap}) : super(key: key);
   
   const HomePage({
     super.key,
@@ -37,7 +39,7 @@ class _HomePageState extends State<HomePage> {
       decoration: BoxDecoration(gradient: orangeGradient),
       child: Column(
         children: [
-          const _HeaderContent(),
+          _HeaderContent(onProfileTap: widget.onProfileTap),
           _MainContainer(
             isLoading: widget.isLoading,
             plans: widget.plans,          
@@ -49,7 +51,8 @@ class _HomePageState extends State<HomePage> {
 }
 
 class _HeaderContent extends StatelessWidget {
-  const _HeaderContent();
+  final VoidCallback? onProfileTap;
+  const _HeaderContent({Key? key, this.onProfileTap}) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
@@ -60,7 +63,7 @@ class _HeaderContent extends StatelessWidget {
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
           const _GreetingText(),
-          const _NotificationAndAvatar(),
+          _NotificationAndAvatar(onProfileTap: onProfileTap),
         ],
       ),
     );
@@ -99,7 +102,8 @@ class _GreetingText extends StatelessWidget {
 }
 
 class _NotificationAndAvatar extends StatelessWidget {
-  const _NotificationAndAvatar();
+  final VoidCallback? onProfileTap;
+  const _NotificationAndAvatar({Key? key, this.onProfileTap}) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
@@ -114,9 +118,12 @@ class _NotificationAndAvatar extends StatelessWidget {
             size: 30,
           ),
         ),
-        CircleAvatar(
-          backgroundImage: const AssetImage('assets/images/sampleAvatar.jpg'),
-          radius: 22,
+        GestureDetector(
+          onTap: onProfileTap,
+          child: CircleAvatar(
+            backgroundImage: const AssetImage('assets/images/sampleAvatar.jpg'),
+            radius: 22,
+          ),
         ),
       ],
     );

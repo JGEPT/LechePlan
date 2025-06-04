@@ -3,9 +3,12 @@ import 'package:lecheplan/providers/theme_provider.dart';
 import 'package:go_router/go_router.dart';
 import 'package:lecheplan/models/friendlist.dart';
 import 'package:lecheplan/models/grouplist.dart';
+import 'package:lecheplan/screens/mainPages/profilePage/profilepage.dart';
+
 
 class PeoplePage extends StatefulWidget {
-  const PeoplePage({super.key});
+  final VoidCallback? onProfileTap;
+  const PeoplePage({Key? key, this.onProfileTap}) : super(key: key);
 
   @override
   State<PeoplePage> createState() => _PeoplePageState();
@@ -329,54 +332,54 @@ class _PeoplePageState extends State<PeoplePage> {
 
   @override
   Widget build(BuildContext context) {
-    return Stack(
-      children: [
-        DefaultTabController(
-          length: 2,
-          child: Column(
-            children: [
-              _HeaderContent(onSearchChanged: _updateSearchQuery),
-              const _PeopleBar(),
-              _MainContent(
-                filteredFriends: filteredFriends,
-                filteredGroups: filteredGroups,
-              ),
-            ],
-          ),
-        ),
-        Positioned(
-          bottom: 95,
-          right: 15,
-          child: Container(
-            height: 55,
-            width: 55,
-            decoration: BoxDecoration(
-              color: orangeAccentColor,
-              shape: BoxShape.circle,
-              boxShadow: [defaultBoxShadow],
-            ),
-            child: IconButton(
-              padding: EdgeInsets.zero,
-              icon: const Icon(
-                Icons.group_add_outlined,
-                color: Colors.white,
-                size: 30,
-              ),
-              onPressed: () => _showAddCreateDialog(context),
+    return Scaffold(
+      body: Stack(
+        children: [
+          DefaultTabController(
+            length: 2,
+            child: Column(
+              children: [
+                _HeaderContent(onSearchChanged: _updateSearchQuery, onProfileTap: widget.onProfileTap),
+                const _PeopleBar(),
+                _MainContent(
+                  filteredFriends: filteredFriends,
+                  filteredGroups: filteredGroups,
+                ),
+              ],
             ),
           ),
-        ),
-      ],
+          Positioned(
+            bottom: 95,
+            right: 15,
+            child: Container(
+              height: 55,
+              width: 55,
+              decoration: BoxDecoration(
+                color: orangeAccentColor,
+                shape: BoxShape.circle,
+                boxShadow: [defaultBoxShadow],
+              ),
+              child: IconButton(
+                padding: EdgeInsets.zero,
+                icon: const Icon(
+                  Icons.group_add_outlined,
+                  color: Colors.white,
+                  size: 30,
+                ),
+                onPressed: () => _showAddCreateDialog(context),
+              ),
+            ),
+          ),
+        ],
+      ),
     );
   }
 }
 
 class _HeaderContent extends StatelessWidget {
   final Function(String) onSearchChanged;
-
-  const _HeaderContent({
-    required this.onSearchChanged,
-  });
+  final VoidCallback? onProfileTap;
+  const _HeaderContent({Key? key, required this.onSearchChanged, this.onProfileTap}) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
@@ -386,7 +389,7 @@ class _HeaderContent extends StatelessWidget {
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
           _SearchBar(onSearchChanged: onSearchChanged),
-          const _NotificationAndAvatar(),
+          _NotificationAndAvatar(onProfileTap: onProfileTap),
         ],
       ),
     );
@@ -487,7 +490,8 @@ class _SearchBarState extends State<_SearchBar> {
 }
 
 class _NotificationAndAvatar extends StatelessWidget {
-  const _NotificationAndAvatar();
+  final VoidCallback? onProfileTap;
+  const _NotificationAndAvatar({Key? key, this.onProfileTap}) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
@@ -502,9 +506,12 @@ class _NotificationAndAvatar extends StatelessWidget {
             size: 30,
           ),
         ),
-        CircleAvatar(
-          backgroundImage: const AssetImage('assets/images/sampleAvatar.jpg'),
-          radius: 22,
+        GestureDetector(
+          onTap: onProfileTap,
+          child: CircleAvatar(
+            backgroundImage: const AssetImage('assets/images/sampleAvatar.jpg'),
+            radius: 22,
+          ),
         ),
       ],
     );
