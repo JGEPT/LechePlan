@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:lecheplan/providers/theme_provider.dart';
+import 'package:go_router/go_router.dart';
 import 'package:logging/logging.dart'; //for adding logs instead of pritning
 
 //widget imports
@@ -119,12 +120,23 @@ class _MainhubpageState extends State<Mainhubpage> {
     });
   }
 
+  // Add this method to switch to the Profile tab
+  void goToProfileTab() {
+    setState(() {
+      _selectedIndex = 3;
+    });
+  }
+
   @override
   Widget build(BuildContext context) {
     final List<Widget> widgetOptions = <Widget>[
       //home page
-      HomePage(plans: plans, isLoading: isLoading),
-      PeoplePage(),
+      HomePage(
+        plans: plans,
+        isLoading: isLoading,
+        onProfileTap: goToProfileTab,
+      ),
+      PeoplePage(onProfileTap: goToProfileTab),
       PlansPage(plans: plans, isLoading: isLoading),
       ProfilePage(),
     ];
@@ -193,7 +205,11 @@ class _BackgroundContainer extends StatelessWidget {
         alignment: Alignment.center,
         width: double.infinity,
         height: double.infinity,
-        child: widgetOptions.elementAt(_selectedIndex),
+        child: Stack(
+          children: [
+            widgetOptions.elementAt(_selectedIndex),
+          ],
+        ),
       ),
     );
   }
