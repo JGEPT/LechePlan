@@ -1,7 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:lecheplan/screens/mainPages/homePage/homepage.dart';
-import 'package:lecheplan/screens/mainPages/peoplePage/peoplepage.dart';
-import 'package:lecheplan/screens/mainPages/plansPage/planspage.dart';
 import 'package:lecheplan/screens/mainPages/profilePage/editprof.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'dart:ui';
@@ -104,17 +101,6 @@ class _ProfilePageState extends State<ProfilePage> {
       setState(() {
         activeInterests = List<String>.from(kFixedInterests); // default: all active
       });
-    }
-  }
-
-  // Handles navigation for the bottom navigation bar
-  void _onItemTapped(BuildContext context, int index) {
-    if (index == 0) {
-      Navigator.pushReplacement(context, MaterialPageRoute(builder: (context) => HomePage()));
-    } else if (index == 1) {
-      Navigator.pushReplacement(context, MaterialPageRoute(builder: (context) => PeoplePage()));
-    } else if (index == 2) {
-      Navigator.pushReplacement(context, MaterialPageRoute(builder: (context) => PlansPage()));
     }
   }
 
@@ -235,19 +221,6 @@ class _ProfilePageState extends State<ProfilePage> {
         : activeInterests.take(5).toList();
 
     return Scaffold(
-      // Bottom navigation bar for main app navigation
-      bottomNavigationBar: BottomNavigationBar(
-        currentIndex: 3,
-        selectedItemColor: Colors.deepOrange,
-        unselectedItemColor: Colors.grey,
-        onTap: (index) => _onItemTapped(context, index),
-        items: const [
-          BottomNavigationBarItem(icon: Icon(Icons.home), label: 'HOME'),
-          BottomNavigationBarItem(icon: Icon(Icons.people), label: 'PEOPLE'),
-          BottomNavigationBarItem(icon: Icon(Icons.event_note), label: 'PLANS'),
-          BottomNavigationBarItem(icon: Icon(Icons.person), label: 'PROFILE'),
-        ],
-      ),
       body: Stack(
         children: [
           // Background image (profile cover)

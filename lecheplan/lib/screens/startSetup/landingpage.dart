@@ -18,7 +18,7 @@ class LandingPage extends StatelessWidget {
           child: Image.asset(
             'assets/images/landingPageBG.png',
             fit: BoxFit.cover,
-            cacheWidth: (MediaQuery.of(context).size.width * MediaQuery.of(context).devicePixelRatio).toInt(),
+            cacheWidth: (MediaQuery.of(context).size.width * MediaQuery.of(context).devicePixelRatio).toInt().clamp(1, double.infinity).toInt(),
             filterQuality: FilterQuality.medium,
           ),
         ),
