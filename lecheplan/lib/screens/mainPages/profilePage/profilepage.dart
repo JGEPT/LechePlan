@@ -6,6 +6,7 @@ import 'package:lecheplan/screens/mainPages/profilePage/editprof.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'dart:ui';
 import 'dart:convert';
+import 'package:lecheplan/screens/mainPages/settingsPage/settings.dart';
 
 const List<String> kFixedInterests = [
   'Social Media',
@@ -435,10 +436,18 @@ class _ProfilePageState extends State<ProfilePage> {
           ),
 
           // More icon at the top right (no functionality yet)
-          const Positioned(
+          Positioned(
             top: 50,
             right: 10,
-            child: Icon(Icons.more_vert, color: Colors.white, size: 28),
+            child: GestureDetector(
+              onTap: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(builder: (context) => const SettingsPage()),
+                );
+              },
+              child: const Icon(Icons.more_vert, color: Colors.white, size: 28),
+            ),
           ),
         ],
       ),

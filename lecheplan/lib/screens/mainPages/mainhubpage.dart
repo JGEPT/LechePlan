@@ -29,8 +29,8 @@ class _MainhubpageState extends State<Mainhubpage> {
     // list of 
     final List<Widget> widgetOptions = <Widget> [
       //home page
-      HomePage(),
-      PeoplePage(),
+      HomePage(onProfileTap: () => _onItemTapped(3)),
+      PeoplePage(onProfileTap: () => _onItemTapped(3)),
       PlansPage(),
       ProfilePage(),
     ];
