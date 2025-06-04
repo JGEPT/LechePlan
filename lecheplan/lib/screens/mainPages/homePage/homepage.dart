@@ -10,7 +10,6 @@ import 'package:lecheplan/models/plan_model.dart';
 
 //widget imports
 import 'package:lecheplan/widgets/reusableWidgets/custom_filledbutton.dart';
-import 'package:lecheplan/screens/mainPages/profilePage/profilepage.dart';
 import 'package:lecheplan/widgets/modelWidgets/upcomingplans_card.dart';
 
 class HomePage extends StatefulWidget {
