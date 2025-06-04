@@ -493,7 +493,7 @@ class _SearchBarState extends State<_SearchBar> {
           style: TextStyle(
             color: darktextColor,
             fontFamily: 'Quicksand',
-            fontSize: 16,
+            fontSize: 13,
             fontWeight: FontWeight.w600,
           ),
           decoration: InputDecoration(
@@ -501,7 +501,7 @@ class _SearchBarState extends State<_SearchBar> {
             hintStyle: TextStyle(
               color: darktextColor.withAlpha(120),
               fontFamily: 'Quicksand',
-              fontSize: 16,
+              fontSize: 13,
               fontWeight: FontWeight.w600,
             ),
             prefixIcon: Icon(
@@ -600,7 +600,7 @@ class _PeopleBar extends StatelessWidget {
           indicatorAnimation: TabIndicatorAnimation.elastic,
           dividerHeight: 0,
           //content
-          tabs: [Tab(text: 'Friend'), Tab(text: 'Group')],
+          tabs: [Tab(text: 'Friends'), Tab(text: 'Groups')],
         ),
       ),
     );
@@ -711,9 +711,10 @@ class _FriendCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Card(
-      margin: const EdgeInsets.only(bottom: 12),
-      elevation: 2,
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+      margin: const EdgeInsets.only(bottom: 5),
+      color: Colors.white,
+      elevation: 0,
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12), side: BorderSide(color: greyAccentColor, width: 2)),
       child: ListTile(
         contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
         leading: CircleAvatar(backgroundImage: AssetImage(profile), radius: 25),
@@ -721,18 +722,18 @@ class _FriendCard extends StatelessWidget {
           name,
           style: const TextStyle(
             fontSize: 16,
-            fontWeight: FontWeight.bold,
+            fontWeight: FontWeight.w700,
             fontFamily: 'Quicksand',
           ),
         ),
         subtitle: Text(
           activity,
-          style: const TextStyle(fontFamily: 'Quicksand'),
+          style: const TextStyle(fontFamily: 'Quicksand', fontWeight: FontWeight.w600),
         ),
         trailing: Icon(
           Icons.arrow_forward_ios_rounded,
           size: 16,
-          color: Colors.grey[400],
+          color: darktextColor.withAlpha(100),
         ),
         onTap: onTap,
       ),
@@ -762,9 +763,10 @@ class _GroupCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Card(
-      margin: const EdgeInsets.only(bottom: 12),
-      elevation: 2,
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+      margin: const EdgeInsets.only(bottom: 5),
+      color: Colors.white,
+      elevation: 0,
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12), side: BorderSide(color: greyAccentColor, width: 2)),
       child: ListTile(
         contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
         leading: CircleAvatar(

@@ -60,11 +60,11 @@ class SettingsPage extends StatelessWidget {
               ),
             ),
             GestureDetector(
-              onTap: () => context.go('/notifications'),
+              onTap: () => context.push('/notifications'),
               child: _SettingsTile(
                 icon: Icons.notifications_none_rounded,
                 text: 'Notifications',
-                onTap: () => context.go('/notifications'),
+                onTap: () => context.push('/notifications'),
                 color: Colors.deepOrange,
               ),
             ),
