@@ -111,7 +111,7 @@ class _InterestsList extends StatelessWidget {
               runSpacing: 7,
               alignment: WrapAlignment.center,
               children: interestsAndHobbies
-                  .map((interest) => InterestsPill(item: interest)).toList(),
+                  .map((interest) => InterestsPill(item: interest, isClickable: true,)).toList(),
             ),
           ),
           const _TopFade(),

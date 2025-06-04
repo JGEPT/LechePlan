@@ -15,13 +15,15 @@ import 'package:lecheplan/widgets/modelWidgets/upcomingplans_card.dart';
 class HomePage extends StatefulWidget {
   final List<Plan> plans;
   final bool isLoading;
-  final VoidCallback? onProfileTap;
+  final VoidCallback? onProfileTap;  
+  final VoidCallback onNavigateToPlans;  
 
   const HomePage({
     super.key,
     required this.plans,
     required this.isLoading,
     this.onProfileTap,
+    required this.onNavigateToPlans,
   });
 
   @override
@@ -41,7 +43,7 @@ class _HomePageState extends State<HomePage> {
       child: Column(
         children: [
           _HeaderContent(onProfileTap: widget.onProfileTap),
-          _MainContainer(isLoading: widget.isLoading, plans: widget.plans),
+          _MainContainer(isLoading: widget.isLoading, plans: widget.plans, onNavigateToPlans: widget.onNavigateToPlans,),
         ],
       ),
     );
@@ -131,8 +133,9 @@ class _NotificationAndAvatar extends StatelessWidget {
 class _MainContainer extends StatelessWidget {
   final bool isLoading;
   final List<Plan> plans;
+  final VoidCallback onNavigateToPlans;
 
-  const _MainContainer({required this.isLoading, required this.plans});
+  const _MainContainer({required this.isLoading, required this.plans, required this.onNavigateToPlans});
 
   @override
   Widget build(BuildContext context) {
@@ -150,7 +153,7 @@ class _MainContainer extends StatelessWidget {
         child: SingleChildScrollView(
           child: Column(
             children: [
-              _ComingUpSection(isLoading: isLoading, plans: plans),
+              _ComingUpSection(isLoading: isLoading, plans: plans, onNavigateToPlans: onNavigateToPlans,),
 
               const SizedBox(height: 20),
 
@@ -166,8 +169,9 @@ class _MainContainer extends StatelessWidget {
 class _ComingUpSection extends StatelessWidget {
   final List<Plan> plans;
   final bool isLoading;
+  final VoidCallback onNavigateToPlans;
 
-  const _ComingUpSection({required this.plans, required this.isLoading});
+  const _ComingUpSection({required this.plans, required this.isLoading, required this.onNavigateToPlans});
 
   @override
   Widget build(BuildContext context) {
@@ -212,7 +216,7 @@ class _ComingUpSection extends StatelessWidget {
             },
           ),
 
-        const SizedBox(height: 16),
+        const SizedBox(height: 5),
 
         Customfilledbutton(
           buttonHeight: 25,
@@ -221,7 +225,7 @@ class _ComingUpSection extends StatelessWidget {
           buttonRadius: 20,
           textColor: lighttextColor,
           buttonLabel: 'See All',
-          pressAction: () {},
+          pressAction: onNavigateToPlans,
         ),
       ],
     );

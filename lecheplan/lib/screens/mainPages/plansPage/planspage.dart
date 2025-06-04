@@ -7,6 +7,7 @@ import 'package:lecheplan/widgets/modelWidgets/month_year_picker.dart';
 import 'package:lecheplan/widgets/modelWidgets/group_calendar_widget.dart'
     as group_cal;
 import 'package:lecheplan/services/plans_services.dart';
+import 'package:go_router/go_router.dart';
 
 class PlansPage extends StatefulWidget {
   final List<Plan> plans;
@@ -201,7 +202,7 @@ class _PlansPageState extends State<PlansPage> {
               Icons.notifications_none_rounded,
               color: Color(0xFF0E1342),
             ),
-            onPressed: () {},
+            onPressed: () => context.push('/notifications'),
           ),
           IconButton(
             icon: const Icon(Icons.more_horiz, color: Color(0xFF0E1342)),
@@ -294,6 +295,9 @@ class _PlansPageState extends State<PlansPage> {
                           ),
                         ),
                       ),
+
+
+                      
                       Expanded(
                         child: MouseRegion(
                           onEnter: (_) => setState(() => calendarHover = true),

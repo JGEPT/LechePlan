@@ -154,10 +154,16 @@ class _MainhubpageState extends State<Mainhubpage> {
     });
   }
 
-  // Add this method to switch to the Profile tab
+  //switch to profile tab when profile is pressed
   void goToProfileTab() {
     setState(() {
       _selectedIndex = 3;
+    });
+  }
+
+  void goToPlans() {
+    setState(() {
+      _selectedIndex = 2;
     });
   }
 
@@ -169,9 +175,16 @@ class _MainhubpageState extends State<Mainhubpage> {
         plans: plans,
         isLoading: isLoading,
         onProfileTap: goToProfileTab,
+        onNavigateToPlans: goToPlans,
       ),
-      PeoplePage(onProfileTap: goToProfileTab, groups: groups),
-      PlansPage(plans: plans, isLoading: isLoading),
+      PeoplePage(
+        onProfileTap: goToProfileTab, 
+        groups: groups
+      ),
+      PlansPage(
+        plans: plans, 
+        isLoading: isLoading
+      ),
       ProfilePage(),
     ];
 
