@@ -3,6 +3,7 @@ import 'package:lecheplan/screens/mainPages/profilePage/editprof.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'dart:ui';
 import 'dart:convert';
+import 'package:lecheplan/screens/miscellaneous/settingspage.dart';
 
 const List<String> kFixedInterests = [
   'Social Media',
@@ -244,7 +245,7 @@ class _ProfilePageState extends State<ProfilePage> {
 
           // Main scrollable content (profile info, interests, details)
           SingleChildScrollView(
-            padding: const EdgeInsets.only(top: 100),
+            padding: const EdgeInsets.only(top: 80, bottom: 60),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
@@ -410,10 +411,18 @@ class _ProfilePageState extends State<ProfilePage> {
           ),
 
           // More icon at the top right (no functionality yet)
-          const Positioned(
+          Positioned(
             top: 50,
             right: 10,
-            child: Icon(Icons.more_vert, color: Colors.white, size: 28),
+            child: GestureDetector(
+              onTap: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(builder: (context) => const SettingsPage()),
+                );
+              },
+              child: const Icon(Icons.more_vert, color: Colors.white, size: 28),
+            ),
           ),
         ],
       ),

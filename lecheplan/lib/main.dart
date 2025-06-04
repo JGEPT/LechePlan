@@ -12,6 +12,8 @@ import 'package:lecheplan/screens/startSetup/createprofilepage.dart';
 import 'package:lecheplan/screens/startSetup/aboutyoupage.dart';
 import 'package:lecheplan/screens/mainPages/mainhubpage.dart';
 import 'package:lecheplan/screens/miscellaneous/notificationspage.dart';
+import 'package:lecheplan/screens/mainPages/profilePage/profilepage.dart';
+import 'package:lecheplan/screens/miscellaneous/settingspage.dart';
 
 //set up the logger -- use logger for testing instead of print statements because flutter said nah 
 void setupLogging() {
@@ -86,6 +88,8 @@ class MyApp extends StatelessWidget {
       GoRoute(path: '/mainhub', builder: (context, state) => Mainhubpage()), 
       GoRoute(path: '/notifications', builder: (context, state) => NotificationsPage()), 
       GoRoute(path: '/activityrecommendation', builder: (context, state) => ActivityRecommendationPage()), 
+      GoRoute(path: '/profilepage', builder: (context, state) => ProfilePage()),
+      GoRoute(path: '/settingspage', builder: (context, state) => SettingsPage()),
     ],
   );
 

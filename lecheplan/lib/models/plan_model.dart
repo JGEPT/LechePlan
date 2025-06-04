@@ -3,9 +3,9 @@ class Plan {
   final String title;
   final String category;
   final DateTime planDateTime;
-  final List<String> participants;
+  final List<String> participants; // usernames
   final List<String> tags;
-  final List<String> avatarAssets;
+  final List<String> profilePhotoUrls; // new: profile photo URLs
 
   Plan({
     required this.planID,
@@ -14,7 +14,7 @@ class Plan {
     required this.planDateTime,
     required this.participants,
     required this.tags,
-    required this.avatarAssets,
+    required this.profilePhotoUrls,
   });
 
   factory Plan.fromJson(Map<String, dynamic> json) {
@@ -25,7 +25,7 @@ class Plan {
       planDateTime: DateTime.parse(json['planDateTime']),
       participants: List<String>.from(json['participants']),
       tags: List<String>.from(json['tags']),
-      avatarAssets: [], // Not loaded from JSON, only used for local sample data
+      profilePhotoUrls: List<String>.from(json['profilePhotoUrls']),
     );
   }
 
@@ -37,7 +37,7 @@ class Plan {
       'planDateTime': planDateTime.toIso8601String(),
       'participants': participants,
       'tags': tags,
-      // avatarAssets intentionally omitted
+      'profilePhotoUrls': profilePhotoUrls,
     };
   }
 }
