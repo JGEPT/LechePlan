@@ -1,5 +1,6 @@
 import 'package:lecheplan/widgets/reusableWidgets/custom_icontextbutton.dart';
 import 'package:go_router/go_router.dart';
+import 'dart:math';
 
 import 'package:flutter/material.dart';
 import 'package:lecheplan/providers/theme_provider.dart';
@@ -202,7 +203,7 @@ class _ComingUpSection extends StatelessWidget {
             padding: EdgeInsets.all(0),
             shrinkWrap: true,
             physics: const NeverScrollableScrollPhysics(),
-            itemCount: plans.length,
+            itemCount: min(plans.length, 2),
             itemBuilder: (context, index) {
               final plan = plans[index];
               return Padding(
@@ -278,11 +279,13 @@ class _ActionButtons extends StatelessWidget {
           label: 'Add\nPeople',
           iconSize: 30,
           buttonIcon: Icons.group_add_outlined,
+          pressAction: () {},
         ),
         CustomIconTextButton(
           label: 'Add\nActivity',
           iconSize: 30,
           buttonIcon: Icons.edit_calendar_outlined,
+          pressAction: () {},
         ),
       ],
     );
@@ -301,7 +304,8 @@ class _RecommendationButtons extends StatelessWidget {
         CustomIconTextButton(
           label: 'Recommend an Activity!',
           iconSize: 25,
-          buttonIcon: Icons.lightbulb_outline_rounded,
+          buttonIcon: Icons.lightbulb_outline_rounded,   
+          pressAction: () => context.push('/activityrecommendation'),       
         ),
         Material(
           color: orangeAccentColor,
