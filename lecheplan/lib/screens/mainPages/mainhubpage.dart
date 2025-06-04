@@ -63,7 +63,6 @@ class _MainhubpageState extends State<Mainhubpage> {
 
 class _BackgroundContainer extends StatelessWidget {
   const _BackgroundContainer({
-    super.key,
     required this.widgetOptions,
     required int selectedIndex,
   }) : _selectedIndex = selectedIndex;
