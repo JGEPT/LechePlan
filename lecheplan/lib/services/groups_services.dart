@@ -7,9 +7,16 @@ final Logger _mainhubLogger = Logger('mainhubLogger');
 //fetch data from the database
 Future<List<Map<String, dynamic>>> fetchAllGroups() async {
   try {
+    final user = Supabase.instance.client.auth.currentUser;
+    if (user == null) {
+      _mainhubLogger.warning('User not logged in');
+      return [];
+    }
+
     final response = await Supabase.instance.client
         .from('groups')
-        .select('group_id, groupname, group_profile');
+        .select('group_id, groupname, group_profile')
+        .eq('group_members.user_id', user.id);
     return (response as List).map((e) => e as Map<String, dynamic>).toList();
   } catch (error) {
     _mainhubLogger.warning(error);

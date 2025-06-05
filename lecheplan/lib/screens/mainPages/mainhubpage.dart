@@ -121,7 +121,7 @@ class _MainhubpageState extends State<Mainhubpage> {
       if (planData['plan_participants'] != null &&
           planData['plan_participants'] is List) {
         for (final p in planData['plan_participants']) {
-          final user = p['users'];
+          final user = p['user_profiles'];
           if (user != null) {
             if (user['username'] != null) participants.add(user['username']);
             if (user['profile_photo_url'] != null &&
@@ -176,14 +176,8 @@ class _MainhubpageState extends State<Mainhubpage> {
         onProfileTap: goToProfileTab,
         onNavigateToPlans: goToPlans,
       ),
-      PeoplePage(
-        onProfileTap: goToProfileTab, 
-        groups: groups
-      ),
-      PlansPage(
-        plans: plans, 
-        isLoading: isLoading
-      ),
+      PeoplePage(onProfileTap: goToProfileTab, groups: groups),
+      PlansPage(plans: plans, isLoading: isLoading, onPlanCreated: _loadPlans),
       ProfilePage(),
     ];
 
