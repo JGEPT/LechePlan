@@ -1,7 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:lecheplan/screens/mainPages/profilePage/editprof.dart';
 import 'package:lecheplan/widgets/modelWidgets/interests_pill.dart';
-import 'package:shared_preferences/shared_preferences.dart';
+import 'package:lecheplan/services/auth_service.dart';
+import 'package:lecheplan/services/profile_service.dart';
 import 'dart:ui';
 import 'dart:convert';
 import 'package:lecheplan/screens/miscellaneous/settingspage.dart';
@@ -32,36 +33,19 @@ class ProfilePage extends StatefulWidget {
 }
 
 class _ProfilePageState extends State<ProfilePage> {
-  // DESIGN: List of interests for the profile
-  // To adjust: Add or remove interests, change text, or modify the list structure
-  final List<String> interests = [
-    'Broadcasting',
-    'Art',
-    'Music',
-    'AI',
-    'Social Media',
-    'Influencer',
-    'Computer Science',
-    'Software Engineering',
-    'Data Science',
-    'Machine Learning',
-    'Cybersecurity',
-    'Blockchain',
-    'Web Development',
-  ];
-
   bool showAllInterests = false;
+  bool _isLoading = true;
   
-  // DESIGN: State variables for profile data
-  // To adjust: Add more fields as needed
+  //profile data from database
   String nameText = '';
   String bioText = '';
   String locationText = '';
   String phoneText = '';
   String emailText = '';
+  String profileImageUrl = '';
+  String username = '';
 
-  // DESIGN: Placeholder text for empty fields
-  // To adjust: Change placeholder messages
+  //placeholders for empty fields
   static const String namePlaceholder = 'Add your name';
   static const String bioPlaceholder = 'Add to your bio...';
   static const String locationPlaceholder = 'Add your location';
@@ -73,42 +57,67 @@ class _ProfilePageState extends State<ProfilePage> {
   @override
   void initState() {
     super.initState();
-    _loadProfileData();
-    _loadActiveInterests();
+    _loadProfileFromDatabase();
   }
 
-  // DESIGN: Load profile data from SharedPreferences
-  // To adjust: Add more fields to load or change storage method
-  Future<void> _loadProfileData() async {
+  //load profile data from database
+  Future<void> _loadProfileFromDatabase() async {
+    setState(() {
+      _isLoading = true;
+    });
+
     try {
-      final prefs = await SharedPreferences.getInstance();
-      setState(() {
-        nameText = prefs.getString('name') ?? '';
-        bioText = prefs.getString('bio') ?? '';
-        locationText = prefs.getString('location') ?? '';
-        phoneText = prefs.getString('phone') ?? '';
-        emailText = prefs.getString('email') ?? '';
-      });
+      final currentUser = AuthService.getCurrentUser();
+      if (currentUser == null) {
+        setState(() {
+          _isLoading = false;
+        });
+        return;
+      }
+
+      //get profile data
+      final profileResult = await ProfileService.getUserProfile(currentUser.id);
+      
+      //get interests
+      final interestsResult = await ProfileService.getUserInterests(currentUser.id);
+
+      if (profileResult['success'] && mounted) {
+        final profile = profileResult['profile'];
+        setState(() {
+          nameText = profile['name'] ?? '';
+          bioText = profile['user_bio'] ?? '';
+          locationText = profile['user_address'] ?? '';
+          phoneText = profile['user_cont_number'] ?? '';
+          emailText = profile['user_email'] ?? '';
+          profileImageUrl = profile['profile_photo_url'] ?? '';
+          username = profile['username'] ?? '';
+          
+          if (interestsResult['success']) {
+            activeInterests = List<String>.from(interestsResult['interests']);
+          }
+          
+          _isLoading = false;
+        });
+      } else {
+        setState(() {
+          _isLoading = false;
+        });
+      }
     } catch (e) {
-      print('Error loading profile data: $e');
+      if (mounted) {
+        setState(() {
+          _isLoading = false;
+        });
+      }
     }
   }
 
-  Future<void> _loadActiveInterests() async {
-    final prefs = await SharedPreferences.getInstance();
-    final interestsString = prefs.getString('activeInterests');
-    if (interestsString != null) {
-      setState(() {
-        activeInterests = List<String>.from(json.decode(interestsString));
-      });
-    } else {
-      setState(() {
-        activeInterests = List<String>.from(kFixedInterests); // default: all active
-      });
-    }
+  //reload data after editing
+  void _refreshProfile() {
+    _loadProfileFromDatabase();
   }
 
-  // Shows the custom modal for edit options (edit profile, select profile cture)
+  //show edit modal
   void showEditProfileModal(BuildContext context) {
     showGeneralDialog(
       context: context,
@@ -187,9 +196,8 @@ class _ProfilePageState extends State<ProfilePage> {
                               context,
                               MaterialPageRoute(builder: (context) => EditProfilePage()),
                             );
-                            // Reload all profile data and interests after returning from edit page
-                            _loadProfileData();
-                            _loadActiveInterests();
+                            //reload profile after editing
+                            _refreshProfile();
                           },
                           child: SizedBox(
                             width: 159,
@@ -219,7 +227,15 @@ class _ProfilePageState extends State<ProfilePage> {
 
   @override
   Widget build(BuildContext context) {
-    // Only show 5 interests unless 'Show All' is toggled
+    if (_isLoading) {
+      return Scaffold(
+        body: Center(
+          child: CircularProgressIndicator(color: orangeAccentColor),
+        ),
+      );
+    }
+
+    //show first 5 interests unless expanded
     final displayedInterests = showAllInterests
         ? activeInterests
         : activeInterests.take(5).toList();
@@ -227,30 +243,45 @@ class _ProfilePageState extends State<ProfilePage> {
     return Scaffold(
       body: Stack(
         children: [
-          // Background image (profile cover)
+          //background image or profile photo
           Positioned(
-            child: Image.asset(
-              'assets/images/sampleAvatar.jpg',
-              width: 450,
-              height: 650,
-              fit: BoxFit.cover,
-            ),
+            child: profileImageUrl.isNotEmpty
+                ? Image.network(
+                    profileImageUrl,
+                    width: 450,
+                    height: 650,
+                    fit: BoxFit.cover,
+                    errorBuilder: (context, error, stackTrace) {
+                      return Image.asset(
+                        'assets/images/sampleAvatar.jpg',
+                        width: 450,
+                        height: 650,
+                        fit: BoxFit.cover,
+                      );
+                    },
+                  )
+                : Image.asset(
+                    'assets/images/sampleAvatar.jpg',
+                    width: 450,
+                    height: 650,
+                    fit: BoxFit.cover,
+                  ),
           ),
 
-          // Semi-transparent overlay for darkening the background
+          //dark overlay
           Positioned.fill(
             child: Container(
               color: Colors.black.withAlpha(50),
             ),
           ),
 
-          // Main scrollable content (profile info, interests, details)
+          //main content
           SingleChildScrollView(
             padding: const EdgeInsets.only(top: 80, bottom: 60),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                // Top section: Name and bio
+                //name and bio section
                 Container(
                   height: 500,
                   padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 24),
@@ -282,7 +313,7 @@ class _ProfilePageState extends State<ProfilePage> {
                   ),
                 ),
 
-                // White rounded container for interests and details
+                //white container for details
                 Container(
                   width: double.infinity,
                   decoration: const BoxDecoration(
@@ -297,51 +328,74 @@ class _ProfilePageState extends State<ProfilePage> {
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      // Interests section
+                      //interests section
                       Text(
                         'Interests',
                         style: TextStyle(fontSize: 30, fontWeight: FontWeight.bold, color: orangeAccentColor),
                       ),
                       const SizedBox(height: 8),
-                      Wrap(
-                        spacing: 4,
-                        runSpacing: 5,
-                        children: displayedInterests
-                          .map((interest) => InterestsPill(item: interest, isClickable: false,)).toList()
-                      ),
+                      if (activeInterests.isNotEmpty)
+                        Wrap(
+                          spacing: 4,
+                          runSpacing: 5,
+                          children: displayedInterests
+                            .map((interest) => InterestsPill(item: interest, isClickable: false,)).toList()
+                        )
+                      else
+                        Text(
+                          'No interests added yet',
+                          style: TextStyle(
+                            color: Colors.grey,
+                            fontStyle: FontStyle.italic,
+                          ),
+                        ),
                       const SizedBox(height: 8),
-                      // Show All / Show Less toggle
-                      TextButton(
-                        onPressed: () {
-                          setState(() {
-                            showAllInterests = !showAllInterests;
-                          });
-                        },
-                        style: TextButton.styleFrom(
-                          foregroundColor: orangeAccentColor,
-                          padding: EdgeInsets.zero,
-                          minimumSize: const Size(50, 30),
-                          tapTargetSize: MaterialTapTargetSize.shrinkWrap,
-                          alignment: Alignment.centerLeft,
+                      //show all toggle
+                      if (activeInterests.length > 5)
+                        GestureDetector(
+                          onTap: () {
+                            setState(() {
+                              showAllInterests = !showAllInterests;
+                            });
+                          },
+                          child: Text(
+                            showAllInterests ? 'Show Less' : 'Show All',
+                            style: TextStyle(
+                              color: orangeAccentColor,
+                              fontWeight: FontWeight.w600,
+                              fontSize: 16,
+                            ),
+                          ),
                         ),
-                        child: Text(
-                          showAllInterests ? 'Show Less ▲' : 'Show All ▼',
-                          style: const TextStyle(fontWeight: FontWeight.w500),
-                        ),
-                      ),
-                      const SizedBox(height: 20),
+                      const SizedBox(height: 30),
 
-                      // Details section
+                      //details section
                       Text(
                         'Details',
                         style: TextStyle(fontSize: 30, fontWeight: FontWeight.bold, color: orangeAccentColor),
                       ),
-                      const SizedBox(height: 10),
-
-                      // Location row
+                      const SizedBox(height: 16),
+                      
+                      //username
                       Row(
                         children: [
-                          Icon(Icons.location_city, color: orangeAccentColor),
+                          Icon(Icons.person, color: orangeAccentColor),
+                          const SizedBox(width: 10),
+                          Text(
+                            username.isEmpty ? 'No username set' : '@$username',
+                            style: TextStyle(
+                              color: username.isEmpty ? Colors.grey : Colors.black,
+                              fontStyle: username.isEmpty ? FontStyle.italic : FontStyle.normal,
+                            ),
+                          ),
+                        ],
+                      ),
+                      const SizedBox(height: 16),
+                      
+                      //location
+                      Row(
+                        children: [
+                          Icon(Icons.location_on, color: orangeAccentColor),
                           const SizedBox(width: 10),
                           Text(
                             locationText.isEmpty ? locationPlaceholder : locationText,
@@ -352,8 +406,9 @@ class _ProfilePageState extends State<ProfilePage> {
                           ),
                         ],
                       ),
-                      const SizedBox(height: 10),
-                      // Phone row
+                      const SizedBox(height: 16),
+                      
+                      //phone
                       Row(
                         children: [
                           Icon(Icons.phone, color: orangeAccentColor),
@@ -367,8 +422,9 @@ class _ProfilePageState extends State<ProfilePage> {
                           ),
                         ],
                       ),
-                      const SizedBox(height: 10),
-                      // Email row
+                      const SizedBox(height: 16),
+                      
+                      //email
                       Row(
                         children: [
                           Icon(Icons.email, color: orangeAccentColor),
@@ -390,7 +446,7 @@ class _ProfilePageState extends State<ProfilePage> {
             ),
           ),
 
-          // Edit icon at the top right (opens the modal)
+          //edit icon
           Positioned(
             top: 50,
             right: 50,
@@ -402,7 +458,7 @@ class _ProfilePageState extends State<ProfilePage> {
             ),
           ),
 
-          // More icon at the top right (no functionality yet)
+          //settings icon
           Positioned(
             top: 50,
             right: 10,

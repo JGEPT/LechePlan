@@ -4,6 +4,9 @@ import 'dart:math';
 
 import 'package:flutter/material.dart';
 import 'package:lecheplan/providers/theme_provider.dart';
+import 'package:lecheplan/services/auth_service.dart';
+import 'package:lecheplan/services/profile_service.dart';
+import 'package:lecheplan/widgets/reusableWidgets/user_avatar.dart';
 
 //model imports
 import 'package:lecheplan/models/plan_model.dart';
@@ -15,15 +18,15 @@ import 'package:lecheplan/widgets/modelWidgets/upcomingplans_card.dart';
 class HomePage extends StatefulWidget {
   final List<Plan> plans;
   final bool isLoading;
-  final VoidCallback? onProfileTap;  
-  final VoidCallback onNavigateToPlans;  
+  final VoidCallback? onProfileTap;
+  final VoidCallback? onNavigateToPlans;
 
   const HomePage({
     super.key,
     required this.plans,
     required this.isLoading,
     this.onProfileTap,
-    required this.onNavigateToPlans,
+    this.onNavigateToPlans,
   });
 
   @override
@@ -31,28 +34,81 @@ class HomePage extends StatefulWidget {
 }
 
 class _HomePageState extends State<HomePage> {
+  String _username = 'User';
+
   @override
   void initState() {
     super.initState();
+    _loadUsername();
+  }
+
+  //load username from database
+  Future<void> _loadUsername() async {
+    try {
+      final currentUser = AuthService.getCurrentUser();
+      if (currentUser == null) return;
+
+      final profileResult = await ProfileService.getUserProfile(currentUser.id);
+      
+      if (profileResult['success'] && mounted) {
+        final profile = profileResult['profile'];
+        setState(() {
+          _username = profile['username'] ?? 'User';
+        });
+      }
+    } catch (e) {
+      //handle error silently
+    }
   }
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      decoration: BoxDecoration(gradient: orangeGradient),
-      child: Column(
+    return Scaffold(
+      backgroundColor: orangeAccentColor,
+      body: Column(
         children: [
-          _HeaderContent(onProfileTap: widget.onProfileTap),
-          _MainContainer(isLoading: widget.isLoading, plans: widget.plans, onNavigateToPlans: widget.onNavigateToPlans,),
+          _Header(
+            onProfileTap: widget.onProfileTap,
+            username: _username,
+          ),
+          Expanded(            
+            child: Container(
+              padding: EdgeInsets.all(20),
+              decoration: BoxDecoration(
+                color: pinkishBackgroundColor,
+                borderRadius: BorderRadius.only(topLeft: Radius.circular(15), topRight: Radius.circular(15))
+              ),
+              child: SingleChildScrollView(              
+                padding: const EdgeInsets.only(bottom: 20),
+                child: Column(
+                  children: [
+                    _UpcomingPlansSection(
+                      plans: widget.plans,
+                      isLoading: widget.isLoading,
+                      onNavigateToPlans: widget.onNavigateToPlans ?? () {},
+                    ),
+                    const SizedBox(height: 20),
+                    const _GroupsSection(),
+                  ],
+                ),
+              ),
+            ),
+          ),
         ],
       ),
     );
   }
 }
 
-class _HeaderContent extends StatelessWidget {
+class _Header extends StatelessWidget {
   final VoidCallback? onProfileTap;
-  const _HeaderContent({Key? key, this.onProfileTap}) : super(key: key);
+  final String username;
+
+  const _Header({
+    Key? key,
+    this.onProfileTap,
+    required this.username,
+  }) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
@@ -62,7 +118,7 @@ class _HeaderContent extends StatelessWidget {
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
-          const _GreetingText(),
+          _GreetingText(username: username),
           _NotificationAndAvatar(onProfileTap: onProfileTap),
         ],
       ),
@@ -71,7 +127,9 @@ class _HeaderContent extends StatelessWidget {
 }
 
 class _GreetingText extends StatelessWidget {
-  const _GreetingText();
+  final String username;
+
+  const _GreetingText({required this.username});
 
   @override
   Widget build(BuildContext context) {
@@ -80,7 +138,7 @@ class _GreetingText extends StatelessWidget {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Text(
-          "Hello, Username!",
+          "Hello, $username!",
           style: TextStyle(
             color: lighttextColor,
             fontSize: 25,
@@ -118,60 +176,21 @@ class _NotificationAndAvatar extends StatelessWidget {
             size: 30,
           ),
         ),
-        GestureDetector(
+        UserAvatar(
+          radius: 22,
           onTap: onProfileTap,
-          child: CircleAvatar(
-            backgroundImage: const AssetImage('assets/images/sampleAvatar.jpg'),
-            radius: 22,
-          ),
         ),
       ],
     );
   }
 }
 
-class _MainContainer extends StatelessWidget {
-  final bool isLoading;
-  final List<Plan> plans;
-  final VoidCallback onNavigateToPlans;
-
-  const _MainContainer({required this.isLoading, required this.plans, required this.onNavigateToPlans});
-
-  @override
-  Widget build(BuildContext context) {
-    return Expanded(
-      child: Container(
-        padding: const EdgeInsets.all(20),
-        width: double.infinity,
-        decoration: BoxDecoration(
-          borderRadius: BorderRadius.only(
-            topLeft: Radius.circular(20),
-            topRight: Radius.circular(20),
-          ),
-          color: pinkishBackgroundColor,
-        ),
-        child: SingleChildScrollView(
-          child: Column(
-            children: [
-              _ComingUpSection(isLoading: isLoading, plans: plans, onNavigateToPlans: onNavigateToPlans,),
-
-              const SizedBox(height: 20),
-
-              _SuggestedForYouSection(onNavigateToPlans: onNavigateToPlans),
-            ],
-          ),
-        ),
-      ),
-    );
-  }
-}
-
-class _ComingUpSection extends StatelessWidget {
+class _UpcomingPlansSection extends StatelessWidget {
   final List<Plan> plans;
   final bool isLoading;
   final VoidCallback onNavigateToPlans;
 
-  const _ComingUpSection({required this.plans, required this.isLoading, required this.onNavigateToPlans});
+  const _UpcomingPlansSection({required this.plans, required this.isLoading, required this.onNavigateToPlans});
 
   @override
   Widget build(BuildContext context) {
@@ -232,10 +251,8 @@ class _ComingUpSection extends StatelessWidget {
   }
 }
 
-class _SuggestedForYouSection extends StatelessWidget {
-  final VoidCallback onNavigateToPlans;
-  
-  const _SuggestedForYouSection({required this.onNavigateToPlans});
+class _GroupsSection extends StatelessWidget {
+  const _GroupsSection();
 
   @override
   Widget build(BuildContext context) {
@@ -244,7 +261,7 @@ class _SuggestedForYouSection extends StatelessWidget {
       mainAxisSize: MainAxisSize.max,
       children: [
         const _SectionHeader(),
-        _ActionButtons(onNavigateToPlans: onNavigateToPlans),
+        _ActionButtons(),
       ],
     );
   }
@@ -270,9 +287,7 @@ class _SectionHeader extends StatelessWidget {
 }
 
 class _ActionButtons extends StatelessWidget {
-  final VoidCallback onNavigateToPlans;
-  
-  const _ActionButtons({required this.onNavigateToPlans});
+  const _ActionButtons();
 
   @override
   Widget build(BuildContext context) {
@@ -313,7 +328,7 @@ class _ActionButtons extends StatelessWidget {
               label: 'Check\nCalendar',
               iconSize: 30,
               buttonIcon: Icons.calendar_month_outlined,
-              pressAction: onNavigateToPlans,
+              pressAction: () {},
             ),
           ],
         ),

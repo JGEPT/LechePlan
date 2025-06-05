@@ -3,6 +3,9 @@ import 'package:lecheplan/providers/theme_provider.dart';
 import 'package:go_router/go_router.dart';
 import 'package:lecheplan/models/friendlist.dart';
 import 'package:lecheplan/models/group_model.dart';
+import 'package:lecheplan/widgets/reusableWidgets/user_avatar.dart';
+import 'package:lecheplan/services/groups_services.dart';
+import 'package:lecheplan/widgets/reusableWidgets/custom_filledinputfield.dart';
 
 class PeoplePage extends StatefulWidget {
   final VoidCallback? onProfileTap;
@@ -550,8 +553,7 @@ class _NotificationAndAvatar extends StatelessWidget {
         ),
         GestureDetector(
           onTap: onProfileTap,
-          child: CircleAvatar(
-            backgroundImage: const AssetImage('assets/images/sampleAvatar.jpg'),
+          child: UserAvatar(
             radius: 22,
           ),
         ),

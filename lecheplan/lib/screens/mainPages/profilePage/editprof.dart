@@ -41,9 +41,9 @@
  */
 
 import 'package:flutter/material.dart';
-import 'package:shared_preferences/shared_preferences.dart';
+import 'package:lecheplan/services/auth_service.dart';
+import 'package:lecheplan/services/profile_service.dart';
 import 'edit_interests.dart';
-import 'dart:convert';
 
 const List<String> kFixedInterests = [
   'Social Media',
@@ -62,8 +62,6 @@ const List<String> kFixedInterests = [
   'Web Development',
 ];
 
-List<String> activeInterests = [];
-
 class EditProfilePage extends StatefulWidget {
   const EditProfilePage({super.key});
 
@@ -72,109 +70,137 @@ class EditProfilePage extends StatefulWidget {
 }
 
 class _EditProfilePageState extends State<EditProfilePage> {
-  // STATE MANAGEMENT: Control flags for edit modes
-  // These determine which sections are currently editable
+  //edit modes
   bool showAllInterests = false;
   bool isNameEditable = false;
   bool isBioEditable = false;
   bool isDetailsEditable = false;
+  bool _isLoading = true;
 
-  // STATE MANAGEMENT: Text storage
-  // These store the actual text content for each field
+  //text storage
   String nameText = '';
   String bioText = '';
   String locationText = '';
   String phoneText = '';
   String emailText = '';
+  String profileImageUrl = '';
 
-  // DESIGN: Placeholder text for empty fields
-  // These are shown when no text has been entered
+  //placeholders
   static const String namePlaceholder = 'Add your name';
   static const String bioPlaceholder = 'Add your bio...';
   static const String locationPlaceholder = 'Add your location';
   static const String phonePlaceholder = 'Add your phone number';
   static const String emailPlaceholder = 'Add your email';
 
-  // STATE MANAGEMENT: Text controllers
-  // These manage the text input fields
+  //text controllers
   final TextEditingController nameController = TextEditingController();
   final TextEditingController bioController = TextEditingController();
   final TextEditingController locationController = TextEditingController();
   final TextEditingController phoneController = TextEditingController();
   final TextEditingController emailController = TextEditingController();
 
+  List<String> activeInterests = [];
+
   @override
   void initState() {
     super.initState();
-    nameController.text = '';
-    bioController.text = '';
-    locationController.text = '';
-    phoneController.text = '';
-    emailController.text = '';
-    _loadSavedData();
-    _loadActiveInterests();
+    _loadDataFromDatabase();
   }
 
-  // STATE MANAGEMENT: Load saved data
-  // This loads previously saved profile data from device storage
-  Future<void> _loadSavedData() async {
+  //load current profile data from database
+  Future<void> _loadDataFromDatabase() async {
     try {
-      final prefs = await SharedPreferences.getInstance();
-      setState(() {
-        nameText = prefs.getString('name') ?? '';
-        bioText = prefs.getString('bio') ?? '';
-        locationText = prefs.getString('location') ?? '';
-        phoneText = prefs.getString('phone') ?? '';
-        emailText = prefs.getString('email') ?? '';
-        
-        // Update controllers with loaded values
-        nameController.text = nameText;
-        bioController.text = bioText;
-        locationController.text = locationText;
-        phoneController.text = phoneText;
-        emailController.text = emailText;
-      });
+      final currentUser = AuthService.getCurrentUser();
+      if (currentUser == null) {
+        setState(() {
+          _isLoading = false;
+        });
+        return;
+      }
+
+      //get profile data
+      final profileResult = await ProfileService.getUserProfile(currentUser.id);
+      
+      //get interests
+      final interestsResult = await ProfileService.getUserInterests(currentUser.id);
+
+      if (profileResult['success'] && mounted) {
+        final profile = profileResult['profile'];
+        setState(() {
+          nameText = profile['name'] ?? '';
+          bioText = profile['user_bio'] ?? '';
+          locationText = profile['user_address'] ?? '';
+          phoneText = profile['user_cont_number'] ?? '';
+          emailText = profile['user_email'] ?? '';
+          profileImageUrl = profile['profile_photo_url'] ?? '';
+          
+          //update controllers
+          nameController.text = nameText;
+          bioController.text = bioText;
+          locationController.text = locationText;
+          phoneController.text = phoneText;
+          emailController.text = emailText;
+          
+          if (interestsResult['success']) {
+            activeInterests = List<String>.from(interestsResult['interests']);
+          }
+          
+          _isLoading = false;
+        });
+      } else {
+        setState(() {
+          _isLoading = false;
+        });
+      }
     } catch (e) {
-      print('Error loading data: $e');
+      if (mounted) {
+        setState(() {
+          _isLoading = false;
+        });
+      }
     }
   }
 
-  // STATE MANAGEMENT: Save data
-  // This saves the current profile data to device storage
-  Future<void> _saveData() async {
+  //save data to database
+  Future<void> _saveDataToDatabase() async {
     try {
-      final prefs = await SharedPreferences.getInstance();
-      await prefs.setString('name', nameText);
-      await prefs.setString('bio', bioText);
-      await prefs.setString('location', locationText);
-      await prefs.setString('phone', phoneText);
-      await prefs.setString('email', emailText);
+      final currentUser = AuthService.getCurrentUser();
+      if (currentUser == null) return;
+
+      //split name into first and last
+      final nameParts = nameText.trim().split(' ');
+      final firstName = nameParts.isNotEmpty ? nameParts.first : '';
+      final lastName = nameParts.length > 1 ? nameParts.sublist(1).join(' ') : '';
+
+      await ProfileService.updateProfile(
+        userId: currentUser.id,
+        firstName: firstName,
+        lastName: lastName,
+        bio: bioText,
+        phoneNumber: phoneText,
+        address: locationText,
+      );
     } catch (e) {
-      print('Error saving data: $e');
+      //handle error silently
     }
   }
 
-  Future<void> _loadActiveInterests() async {
-    final prefs = await SharedPreferences.getInstance();
-    final interestsString = prefs.getString('activeInterests');
-    if (interestsString != null) {
-      setState(() {
-        activeInterests = List<String>.from(json.decode(interestsString));
-      });
-    } else {
-      setState(() {
-        activeInterests = List<String>.from(kFixedInterests); // default: all active
-      });
+  //save interests to database
+  Future<void> _saveInterestsToDatabase() async {
+    try {
+      final currentUser = AuthService.getCurrentUser();
+      if (currentUser == null) return;
+
+      await ProfileService.saveUserInterests(
+        userId: currentUser.id,
+        interests: activeInterests,
+      );
+    } catch (e) {
+      //handle error silently
     }
   }
 
-  Future<void> _saveActiveInterests() async {
-    final prefs = await SharedPreferences.getInstance();
-    await prefs.setString('activeInterests', json.encode(activeInterests));
-  }
-
-  // STATE MANAGEMENT: Handle taps outside editing areas
-  // This saves changes and closes edit mode when tapping outside
+  //handle tap outside
   void _handleTapOutside() {
     if (isNameEditable || isBioEditable || isDetailsEditable) {
       setState(() {
@@ -192,14 +218,13 @@ class _EditProfilePageState extends State<EditProfilePage> {
         isNameEditable = false;
         isBioEditable = false;
         isDetailsEditable = false;
-        _saveData();
       });
+      _saveDataToDatabase();
     }
   }
 
   @override
   void dispose() {
-    // Clean up controllers when the page is closed
     nameController.dispose();
     bioController.dispose();
     locationController.dispose();
@@ -210,8 +235,23 @@ class _EditProfilePageState extends State<EditProfilePage> {
 
   @override
   Widget build(BuildContext context) {
-    // DESIGN: Only show 5 interests unless 'Show All' is toggled
-    // To adjust: Change the number of initially visible interests
+    if (_isLoading) {
+      return Scaffold(
+        appBar: AppBar(
+          backgroundColor: Colors.white,
+          elevation: 0,
+          leading: IconButton(
+            icon: const Icon(Icons.arrow_back, color: Color(0xBF0E1342)),
+            onPressed: () => Navigator.pop(context),
+          ),
+        ),
+        body: const Center(
+          child: CircularProgressIndicator(),
+        ),
+      );
+    }
+
+    //show first 5 interests unless expanded
     final displayedInterests = showAllInterests
         ? activeInterests
         : activeInterests.take(5).toList();
@@ -220,119 +260,140 @@ class _EditProfilePageState extends State<EditProfilePage> {
       onTap: _handleTapOutside,
       child: Scaffold(
         backgroundColor: Colors.white,
-        body: Stack(
-          children: [
-            // DESIGN: Main scrollable content
-            SingleChildScrollView(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  // DESIGN: Header section
-                  // To adjust: Modify padding, colors, or text styles
-                  Container(
-                    padding: const EdgeInsets.only(top: 50, left: 20, right: 20, bottom: 10),
-                    decoration: BoxDecoration(
+        appBar: AppBar(
+          backgroundColor: Colors.white,
+          elevation: 0,
+          leading: IconButton(
+            icon: const Icon(Icons.arrow_back, color: Color(0xBF0E1342)),
+            onPressed: () => Navigator.pop(context),
+          ),
+          title: const Text(
+            'Edit Profile',
+            style: TextStyle(
+              color: Color(0xBF0E1342),
+              fontSize: 20,
+              fontFamily: 'Quicksand',
+              fontWeight: FontWeight.w700,
+            ),
+          ),
+          centerTitle: true,
+          actions: [
+            TextButton(
+              onPressed: () async {
+                setState(() {
+                  nameText = nameController.text;
+                  bioText = bioController.text;
+                  locationText = locationController.text;
+                  phoneText = phoneController.text;
+                  emailText = emailController.text;
+                  isNameEditable = false;
+                  isBioEditable = false;
+                  isDetailsEditable = false;
+                });
+                await _saveDataToDatabase();
+                if (mounted) {
+                  Navigator.pop(context);
+                }
+              },
+              style: TextButton.styleFrom(
+                padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
+              ),
+              child: const Text(
+                'Done',
+                style: TextStyle(
+                  color: Color(0xBF0E1342),
+                  fontSize: 18,
+                  fontFamily: 'Quicksand',
+                  fontWeight: FontWeight.w600,
+                ),
+              ),
+            ),
+          ],
+        ),
+        body: SingleChildScrollView(
+          child: Column(
+            children: [
+              //sections
+              Container(
+                width: double.infinity,
+                color: const Color(0xFFF6F6F6),
+                child: Column(
+                  children: [
+                    //profile picture section
+                    Container(
+                      width: double.infinity,
                       color: Colors.white,
-                      border: Border(
-                        bottom: BorderSide(
-                          color: Colors.black.withOpacity(0.1),
-                          width: 2,
-                        ),
+                      padding: const EdgeInsets.all(20),
+                      child: Column(
+                        children: [
+                          Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                            children: [
+                              const Padding(
+                                padding: EdgeInsets.only(left: 20),
+                                child: Text(
+                                  'Profile picture',
+                                  style: TextStyle(
+                                    color: Color(0xBF0E1342),
+                                    fontSize: 25,
+                                    fontFamily: 'Quicksand',
+                                    fontWeight: FontWeight.w700,
+                                  ),
+                                ),
+                              ),
+                              Padding(
+                                padding: const EdgeInsets.only(right: 20),
+                                child: TextButton(
+                                  onPressed: () {
+                                    //todo: implement profile picture edit
+                                  },
+                                  child: const Text(
+                                    'Edit',
+                                    style: TextStyle(
+                                      color: Color(0xBF0E1342),
+                                      fontSize: 18,
+                                      fontFamily: 'Quicksand',
+                                    ),
+                                  ),
+                                ),
+                              ),
+                            ],
+                          ),
+                          const SizedBox(height: 20),
+                          Center(
+                            child: Container(
+                              width: 143,
+                              height: 143,
+                              decoration: ShapeDecoration(
+                                image: DecorationImage(
+                                  image: (profileImageUrl.isNotEmpty)
+                                      ? NetworkImage(profileImageUrl)
+                                      : const AssetImage('assets/images/sampleAvatar.jpg') as ImageProvider,
+                                  fit: BoxFit.cover,
+                                ),
+                                shape: RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.circular(95.50),
+                                ),
+                              ),
+                            ),
+                          ),
+                        ],
                       ),
                     ),
-                    child: Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: [
-                        // DESIGN: Cancel button
-                        // To adjust: Modify text style, color, or padding
-                        TextButton(
-                          onPressed: () => Navigator.pop(context),
-                          style: TextButton.styleFrom(
-                            padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
-                          ),
-                          child: const Text(
-                            'Cancel',
-                            style: TextStyle(
-                              color: Color(0xBF0E1342),
-                              fontSize: 18,
-                              fontFamily: 'Quicksand',
-                              fontWeight: FontWeight.w600,
-                            ),
-                          ),
-                        ),
-                        // DESIGN: Title text
-                        // To adjust: Modify text style, color, or size
-                        const Text(
-                          'Edit Profile',
-                          style: TextStyle(
-                            color: Color(0xBF0E1342),
-                            fontSize: 25,
-                            fontFamily: 'Quicksand',
-                            fontWeight: FontWeight.w700,
-                          ),
-                        ),
-                        // DESIGN: Done button
-                        // To adjust: Modify text style, color, or padding
-                        TextButton(
-                          onPressed: () async {
-                            setState(() {
-                              nameText = nameController.text;
-                              bioText = bioController.text;
-                              locationText = locationController.text;
-                              phoneText = phoneController.text;
-                              emailText = emailController.text;
-                              isNameEditable = false;
-                              isBioEditable = false;
-                              isDetailsEditable = false;
-                            });
-                            await _saveData();
-                            if (mounted) {
-                              Navigator.pop(context);
-                            }
-                          },
-                          style: TextButton.styleFrom(
-                            padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
-                          ),
-                          child: const Text(
-                            'Done',
-                            style: TextStyle(
-                              color: Color(0xBF0E1342),
-                              fontSize: 18,
-                              fontFamily: 'Quicksand',
-                              fontWeight: FontWeight.w600,
-                            ),
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
 
-                  // DESIGN: Profile picture section
-                  // To adjust: Modify container padding, border, or background
-                  Container(
-                    padding: const EdgeInsets.symmetric(vertical: 20),
-                    decoration: BoxDecoration(
+                    //name section
+                    Container(
+                      width: double.infinity,
                       color: Colors.white,
-                      border: Border(
-                        bottom: BorderSide(
-                          color: Colors.black.withOpacity(0.1),
-                          width: 2,
-                        ),
-                      ),
-                    ),
-                    child: Column(
-                      children: [
-                        // DESIGN: Profile picture header row
-                        // To adjust: Modify spacing or alignment
-                        Row(
-                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                          children: [
-                            // DESIGN: Section title
-                            // To adjust: Modify text style or padding
-                            const Padding(
-                              padding: EdgeInsets.only(left: 20),
-                              child: Text(
-                                'Profile picture',
+                      margin: const EdgeInsets.only(top: 10),
+                      padding: const EdgeInsets.all(20),
+                      child: Column(
+                        children: [
+                          Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                            children: [
+                              const Text(
+                                'Name',
                                 style: TextStyle(
                                   color: Color(0xBF0E1342),
                                   fontSize: 25,
@@ -340,14 +401,199 @@ class _EditProfilePageState extends State<EditProfilePage> {
                                   fontWeight: FontWeight.w700,
                                 ),
                               ),
-                            ),
-                            // DESIGN: Edit button
-                            // To adjust: Modify button style or position
-                            Padding(
-                              padding: const EdgeInsets.only(right: 20),
-                              child: TextButton(
-                                onPressed: () {
-                                  // TODO: Implement profile picture edit
+                              Padding(
+                                padding: const EdgeInsets.only(right: 4),
+                                child: Material(
+                                  color: Colors.transparent,
+                                  child: InkWell(
+                                    onTap: () {
+                                      setState(() {
+                                        if (isNameEditable) {
+                                          final newText = nameController.text.trim();
+                                          if (newText.isNotEmpty) {
+                                            nameText = newText;
+                                            _saveDataToDatabase();
+                                          }
+                                          isNameEditable = false;
+                                        } else {
+                                          isBioEditable = false;
+                                          isDetailsEditable = false;
+                                          nameController.text = nameText;
+                                          isNameEditable = true;
+                                        }
+                                      });
+                                    },
+                                    borderRadius: BorderRadius.circular(8),
+                                    child: const Padding(
+                                      padding: EdgeInsets.all(8.0),
+                                      child: Text(
+                                        'Edit',
+                                        style: TextStyle(
+                                          color: Color(0xBF0E1342),
+                                          fontSize: 18,
+                                          fontFamily: 'Quicksand',
+                                        ),
+                                      ),
+                                    ),
+                                  ),
+                                ),
+                              ),
+                            ],
+                          ),
+                          const SizedBox(height: 10),
+                          GestureDetector(
+                            onTap: () {}, 
+                            child: isNameEditable
+                                ? TextField(
+                                    controller: nameController,
+                                    decoration: InputDecoration(
+                                      hintText: namePlaceholder,
+                                      border: OutlineInputBorder(
+                                        borderRadius: BorderRadius.circular(10),
+                                      ),
+                                      filled: true,
+                                      fillColor: Colors.white,
+                                    ),
+                                  )
+                                : Text(
+                                    nameText.isEmpty ? namePlaceholder : nameText,
+                                    style: TextStyle(
+                                      color: nameText.isEmpty ? Color(0xFF4A4E71).withOpacity(0.5) : Color(0xFF4A4E71),
+                                      fontSize: 15,
+                                      fontFamily: 'Quicksand',
+                                      fontStyle: nameText.isEmpty ? FontStyle.italic : FontStyle.normal,
+                                    ),
+                                  ),
+                          ),
+                        ],
+                      ),
+                    ),
+
+                    //bio section
+                    Container(
+                      width: double.infinity,
+                      color: Colors.white,
+                      margin: const EdgeInsets.only(top: 10),
+                      padding: const EdgeInsets.all(20),
+                      child: Column(
+                        children: [
+                          Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                            children: [
+                              const Text(
+                                'Bio',
+                                style: TextStyle(
+                                  color: Color(0xBF0E1342),
+                                  fontSize: 25,
+                                  fontFamily: 'Quicksand',
+                                  fontWeight: FontWeight.w700,
+                                ),
+                              ),
+                              Padding(
+                                padding: const EdgeInsets.only(right: 4),
+                                child: Material(
+                                  color: Colors.transparent,
+                                  child: InkWell(
+                                    onTap: () {
+                                      setState(() {
+                                        if (isBioEditable) {
+                                          final newText = bioController.text.trim();
+                                          if (newText.isNotEmpty) {
+                                            bioText = newText;
+                                            _saveDataToDatabase();
+                                          }
+                                          isBioEditable = false;
+                                        } else {
+                                          isNameEditable = false;
+                                          isDetailsEditable = false;
+                                          bioController.text = bioText;
+                                          isBioEditable = true;
+                                        }
+                                      });
+                                    },
+                                    borderRadius: BorderRadius.circular(8),
+                                    child: const Padding(
+                                      padding: EdgeInsets.all(8.0),
+                                      child: Text(
+                                        'Edit',
+                                        style: TextStyle(
+                                          color: Color(0xBF0E1342),
+                                          fontSize: 18,
+                                          fontFamily: 'Quicksand',
+                                        ),
+                                      ),
+                                    ),
+                                  ),
+                                ),
+                              ),
+                            ],
+                          ),
+                          const SizedBox(height: 10),
+                          GestureDetector(
+                            onTap: () {}, 
+                            child: isBioEditable
+                                ? TextField(
+                                    controller: bioController,
+                                    maxLines: 3,
+                                    decoration: InputDecoration(
+                                      hintText: bioPlaceholder,
+                                      border: OutlineInputBorder(
+                                        borderRadius: BorderRadius.circular(10),
+                                      ),
+                                      filled: true,
+                                      fillColor: Colors.white,
+                                    ),
+                                  )
+                                : Text(
+                                    bioText.isEmpty ? bioPlaceholder : bioText,
+                                    style: TextStyle(
+                                      color: bioText.isEmpty ? Color(0xFF4A4E71).withOpacity(0.5) : Color(0xFF4A4E71),
+                                      fontSize: 15,
+                                      fontFamily: 'Quicksand',
+                                      fontStyle: bioText.isEmpty ? FontStyle.italic : FontStyle.normal,
+                                    ),
+                                  ),
+                          ),
+                        ],
+                      ),
+                    ),
+
+                    //interests section
+                    Container(
+                      width: double.infinity,
+                      color: Colors.white,
+                      margin: const EdgeInsets.only(top: 10),
+                      padding: const EdgeInsets.all(20),
+                      child: Column(
+                        children: [
+                          Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                            children: [
+                              const Text(
+                                'Interests',
+                                style: TextStyle(
+                                  color: Color(0xBF0E1342),
+                                  fontSize: 25,
+                                  fontFamily: 'Quicksand',
+                                  fontWeight: FontWeight.w700,
+                                ),
+                              ),
+                              TextButton(
+                                onPressed: () async {
+                                  final result = await Navigator.push(
+                                    context,
+                                    MaterialPageRoute(
+                                      builder: (context) => EditInterestsPage(
+                                        activeInterests: activeInterests,
+                                      ),
+                                    ),
+                                  );
+                                  if (result != null && result is List<String>) {
+                                    setState(() {
+                                      activeInterests = List<String>.from(result);
+                                    });
+                                    _saveInterestsToDatabase();
+                                  }
                                 },
                                 child: const Text(
                                   'Edit',
@@ -358,506 +604,216 @@ class _EditProfilePageState extends State<EditProfilePage> {
                                   ),
                                 ),
                               ),
-                            ),
-                          ],
-                        ),
-                        const SizedBox(height: 20),
-                        // DESIGN: Profile picture container
-                        // To adjust: Modify size, border radius, or image fit
-                        Center(
-                          child: Container(
-                            width: 143,
-                            height: 143,
-                            decoration: ShapeDecoration(
-                              image: const DecorationImage(
-                                image: AssetImage('assets/images/sampleAvatar.jpg'),
-                                fit: BoxFit.cover,
-                              ),
-                              shape: RoundedRectangleBorder(
-                                borderRadius: BorderRadius.circular(95.50),
-                              ),
-                            ),
+                            ],
                           ),
-                        ),
-                      ],
-                    ),
-                  ),
-
-                  // DESIGN: Name section
-                  Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 20),
-                    decoration: BoxDecoration(
-                      color: Colors.white,
-                      border: Border(
-                        bottom: BorderSide(
-                          color: Colors.black.withOpacity(0.1),
-                          width: 2,
-                        ),
-                      ),
-                    ),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Row(
-                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                          crossAxisAlignment: CrossAxisAlignment.center,
-                          children: [
-                            const Text(
-                              'Name',
+                          const SizedBox(height: 10),
+                          if (activeInterests.isNotEmpty)
+                            Wrap(
+                              spacing: 8,
+                              runSpacing: 8,
+                              children: displayedInterests
+                                  .map((interest) => Container(
+                                        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                                        decoration: BoxDecoration(
+                                          color: Colors.grey[200],
+                                          borderRadius: BorderRadius.circular(20),
+                                        ),
+                                        child: Text(
+                                          interest,
+                                          style: const TextStyle(
+                                            color: Color(0xFF4A4E71),
+                                            fontSize: 14,
+                                            fontFamily: 'Quicksand',
+                                          ),
+                                        ),
+                                      ))
+                                  .toList(),
+                            )
+                          else
+                            Text(
+                              'No interests added yet',
                               style: TextStyle(
-                                color: Color(0xBF0E1342),
-                                fontSize: 25,
+                                color: Color(0xFF4A4E71).withOpacity(0.5),
+                                fontSize: 15,
                                 fontFamily: 'Quicksand',
-                                fontWeight: FontWeight.w700,
+                                fontStyle: FontStyle.italic,
                               ),
                             ),
+                          if (activeInterests.length > 5)
                             Padding(
-                              padding: const EdgeInsets.only(right: 4),
-                              child: Material(
-                                color: Colors.transparent,
-                                child: InkWell(
-                                  onTap: () {
-                                    setState(() {
-                                      if (isNameEditable) {
-                                        final newText = nameController.text.trim();
-                                        if (newText.isNotEmpty) {
-                                          nameText = newText;
-                                          _saveData();
-                                        }
-                                        isNameEditable = false;
-                                      } else {
-                                        isBioEditable = false;
-                                        isDetailsEditable = false;
-                                        nameController.text = nameText;
-                                        isNameEditable = true;
-                                      }
-                                    });
-                                  },
-                                  borderRadius: BorderRadius.circular(8),
-                                  child: Padding(
-                                    padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-                                    child: Text(
-                                      isNameEditable ? 'Done' : 'Edit',
-                                      style: const TextStyle(
-                                        color: Color(0xBF0E1342),
-                                        fontSize: 18,
-                                        fontFamily: 'Quicksand',
-                                        fontWeight: FontWeight.w600,
-                                        fontStyle: FontStyle.normal,
-                                      ),
-                                    ),
-                                  ),
-                                ),
-                              ),
-                            ),
-                          ],
-                        ),
-                        const SizedBox(height: 10),
-                        GestureDetector(
-                          onTap: () {}, // Empty onTap to prevent tap from bubbling up
-                          child: isNameEditable
-                              ? TextField(
-                                  controller: nameController,
-                                  decoration: InputDecoration(
-                                    hintText: namePlaceholder,
-                                    border: OutlineInputBorder(
-                                      borderRadius: BorderRadius.circular(10),
-                                    ),
-                                    filled: true,
-                                    fillColor: Colors.white,
-                                  ),
-                                )
-                              : Text(
-                                  nameText.isEmpty ? namePlaceholder : nameText,
+                              padding: const EdgeInsets.only(top: 10),
+                              child: GestureDetector(
+                                onTap: () {
+                                  setState(() {
+                                    showAllInterests = !showAllInterests;
+                                  });
+                                },
+                                child: Text(
+                                  showAllInterests ? 'Show Less' : 'Show All',
                                   style: const TextStyle(
                                     color: Color(0xBF0E1342),
-                                    fontSize: 15,
+                                    fontSize: 16,
                                     fontFamily: 'Quicksand',
+                                    fontWeight: FontWeight.w600,
                                   ),
                                 ),
-                        ),
-                      ],
-                    ),
-                  ),
-
-                  // DESIGN: Bio section
-                  // To adjust: Modify container padding, border, or background
-                  Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 20),
-                    decoration: BoxDecoration(
-                      color: Colors.white,
-                      border: Border(
-                        bottom: BorderSide(
-                          color: Colors.black.withOpacity(0.1),
-                          width: 2,
-                        ),
-                      ),
-                    ),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Row(
-                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                          crossAxisAlignment: CrossAxisAlignment.center,
-                          children: [
-                            const Text(
-                              'Bio',
-                              style: TextStyle(
-                                color: Color(0xBF0E1342),
-                                fontSize: 25,
-                                fontFamily: 'Quicksand',
-                                fontWeight: FontWeight.w700,
                               ),
                             ),
-                            Padding(
-                              padding: const EdgeInsets.only(right: 4),
-                              child: Material(
-                                color: Colors.transparent,
-                                child: InkWell(
-                                  onTap: () {
-                                    setState(() {
-                                      if (isBioEditable) {
-                                        final newText = bioController.text.trim();
-                                        if (newText.isNotEmpty) {
-                                          bioText = newText;
-                                          _saveData();
+                        ],
+                      ),
+                    ),
+
+                    //details section
+                    Container(
+                      width: double.infinity,
+                      color: Colors.white,
+                      margin: const EdgeInsets.only(top: 10),
+                      padding: const EdgeInsets.all(20),
+                      child: Column(
+                        children: [
+                          Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                            children: [
+                              const Text(
+                                'Details',
+                                style: TextStyle(
+                                  color: Color(0xBF0E1342),
+                                  fontSize: 25,
+                                  fontFamily: 'Quicksand',
+                                  fontWeight: FontWeight.w700,
+                                ),
+                              ),
+                              Padding(
+                                padding: const EdgeInsets.only(right: 4),
+                                child: Material(
+                                  color: Colors.transparent,
+                                  child: InkWell(
+                                    onTap: () {
+                                      setState(() {
+                                        if (isDetailsEditable) {
+                                          final newLocation = locationController.text.trim();
+                                          final newPhone = phoneController.text.trim();
+                                          final newEmail = emailController.text.trim();
+                                          if (newLocation.isNotEmpty) locationText = newLocation;
+                                          if (newPhone.isNotEmpty) phoneText = newPhone;
+                                          if (newEmail.isNotEmpty) emailText = newEmail;
+                                          _saveDataToDatabase();
+                                          isDetailsEditable = false;
+                                        } else {
+                                          isNameEditable = false;
+                                          isBioEditable = false;
+                                          locationController.text = locationText;
+                                          phoneController.text = phoneText;
+                                          emailController.text = emailText;
+                                          isDetailsEditable = true;
                                         }
-                                        isBioEditable = false;
-                                      } else {
-                                        isNameEditable = false;
-                                        isDetailsEditable = false;
-                                        bioController.text = bioText;
-                                        isBioEditable = true;
-                                      }
-                                    });
-                                  },
-                                  borderRadius: BorderRadius.circular(8),
-                                  child: Padding(
-                                    padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-                                    child: Text(
-                                      isBioEditable ? 'Done' : 'Edit',
-                                      style: const TextStyle(
-                                        color: Color(0xBF0E1342),
-                                        fontSize: 18,
-                                        fontFamily: 'Quicksand',
-                                        fontWeight: FontWeight.w600,
-                                        fontStyle: FontStyle.normal,
+                                      });
+                                    },
+                                    borderRadius: BorderRadius.circular(8),
+                                    child: const Padding(
+                                      padding: EdgeInsets.all(8.0),
+                                      child: Text(
+                                        'Edit',
+                                        style: TextStyle(
+                                          color: Color(0xBF0E1342),
+                                          fontSize: 18,
+                                          fontFamily: 'Quicksand',
+                                        ),
                                       ),
                                     ),
                                   ),
                                 ),
                               ),
-                            ),
-                          ],
-                        ),
-                        const SizedBox(height: 10),
-                        // DESIGN: Bio content
-                        // To adjust: Modify text field or text style
-                        GestureDetector(
-                          onTap: () {}, // Empty onTap to prevent tap from bubbling up
-                          child: isBioEditable
-                              ? TextField(
-                                  controller: bioController,
-                                  maxLines: 3,
+                            ],
+                          ),
+                          const SizedBox(height: 10),
+                          if (isDetailsEditable)
+                            Column(
+                              children: [
+                                TextField(
+                                  controller: locationController,
                                   decoration: InputDecoration(
-                                    hintText: bioPlaceholder,
+                                    labelText: 'Location',
+                                    hintText: locationPlaceholder,
                                     border: OutlineInputBorder(
                                       borderRadius: BorderRadius.circular(10),
                                     ),
                                     filled: true,
                                     fillColor: Colors.white,
                                   ),
-                                )
-                              : Text(
-                                  bioText.isEmpty ? bioPlaceholder : bioText,
+                                ),
+                                const SizedBox(height: 10),
+                                TextField(
+                                  controller: phoneController,
+                                  decoration: InputDecoration(
+                                    labelText: 'Phone',
+                                    hintText: phonePlaceholder,
+                                    border: OutlineInputBorder(
+                                      borderRadius: BorderRadius.circular(10),
+                                    ),
+                                    filled: true,
+                                    fillColor: Colors.white,
+                                  ),
+                                ),
+                                const SizedBox(height: 10),
+                                TextField(
+                                  controller: emailController,
+                                  decoration: InputDecoration(
+                                    labelText: 'Email',
+                                    hintText: emailPlaceholder,
+                                    border: OutlineInputBorder(
+                                      borderRadius: BorderRadius.circular(10),
+                                    ),
+                                    filled: true,
+                                    fillColor: Colors.white,
+                                  ),
+                                ),
+                              ],
+                            )
+                          else
+                            Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text(
+                                  'Location: ${locationText.isEmpty ? locationPlaceholder : locationText}',
                                   style: TextStyle(
-                                    color: bioText.isEmpty ? Color(0xFF4A4E71).withOpacity(0.5) : Color(0xFF4A4E71),
+                                    color: locationText.isEmpty ? Color(0xFF4A4E71).withOpacity(0.5) : Color(0xFF4A4E71),
                                     fontSize: 15,
                                     fontFamily: 'Quicksand',
-                                    fontStyle: bioText.isEmpty ? FontStyle.italic : FontStyle.normal,
+                                    fontStyle: locationText.isEmpty ? FontStyle.italic : FontStyle.normal,
                                   ),
                                 ),
-                        ),
-                      ],
-                    ),
-                  ),
-
-                  // DESIGN: Interests section
-                  // To adjust: Modify container padding, border, or background
-                  Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 20),
-                    decoration: BoxDecoration(
-                      color: Colors.white,
-                      border: Border(
-                        bottom: BorderSide(
-                          color: Colors.black.withOpacity(0.1),
-                          width: 2,
-                        ),
+                                const SizedBox(height: 8),
+                                Text(
+                                  'Phone: ${phoneText.isEmpty ? phonePlaceholder : phoneText}',
+                                  style: TextStyle(
+                                    color: phoneText.isEmpty ? Color(0xFF4A4E71).withOpacity(0.5) : Color(0xFF4A4E71),
+                                    fontSize: 15,
+                                    fontFamily: 'Quicksand',
+                                    fontStyle: phoneText.isEmpty ? FontStyle.italic : FontStyle.normal,
+                                  ),
+                                ),
+                                const SizedBox(height: 8),
+                                Text(
+                                  'Email: ${emailText.isEmpty ? emailPlaceholder : emailText}',
+                                  style: TextStyle(
+                                    color: emailText.isEmpty ? Color(0xFF4A4E71).withOpacity(0.5) : Color(0xFF4A4E71),
+                                    fontSize: 15,
+                                    fontFamily: 'Quicksand',
+                                    fontStyle: emailText.isEmpty ? FontStyle.italic : FontStyle.normal,
+                                  ),
+                                ),
+                              ],
+                            ),
+                        ],
                       ),
                     ),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        // DESIGN: Interests header row
-                        // To adjust: Modify spacing or alignment
-                        Row(
-                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                          children: [
-                            const Text(
-                              'Interests',
-                              style: TextStyle(
-                                color: Color(0xBF0E1342),
-                                fontSize: 25,
-                                fontFamily: 'Quicksand',
-                                fontWeight: FontWeight.w700,
-                              ),
-                            ),
-                            // DESIGN: Edit button
-                            // To adjust: Modify button style or behavior
-                            TextButton(
-                              onPressed: () async {
-                                // Open the EditInterestsPage and wait for result
-                                final result = await Navigator.push(
-                                  context,
-                                  MaterialPageRoute(
-                                    builder: (context) => EditInterestsPage(
-                                      activeInterests: activeInterests,
-                                    ),
-                                  ),
-                                );
-                                if (result != null && result is List<String>) {
-                                  setState(() {
-                                    activeInterests = List<String>.from(result);
-                                  });
-                                  _saveActiveInterests();
-                                }
-                              },
-                              child: const Text(
-                                'Edit',
-                                style: TextStyle(
-                                  color: Color(0xBF0E1342),
-                                  fontSize: 18,
-                                  fontFamily: 'Quicksand',
-                                ),
-                              ),
-                            ),
-                          ],
-                        ),
-                        const SizedBox(height: 10),
-                        // DESIGN: Interests chips
-                        // To adjust: Modify chip style, spacing, or layout
-                        Center(
-                          child: Wrap(
-                            alignment: WrapAlignment.center,
-                            spacing: 8,
-                            runSpacing: 8,
-                            children: displayedInterests.map((name) => Chip(
-                              label: Text(name),
-                              backgroundColor: Colors.deepOrange,
-                              labelStyle: const TextStyle(
-                                color: Colors.white,
-                                fontWeight: FontWeight.w700,
-                              ),
-                              padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
-                              shape: RoundedRectangleBorder(
-                                borderRadius: BorderRadius.circular(20),
-                              ),
-                            )).toList(),
-                          ),
-                        ),
-                        // DESIGN: Show more/less button
-                        // To adjust: Modify button style or position
-                        if (activeInterests.length > 5)
-                          Center(
-                            child: TextButton(
-                              onPressed: () {
-                                setState(() {
-                                  showAllInterests = !showAllInterests;
-                                });
-                              },
-                              style: TextButton.styleFrom(
-                                foregroundColor: Colors.deepOrange,
-                                padding: EdgeInsets.zero,
-                                minimumSize: const Size(50, 30),
-                                tapTargetSize: MaterialTapTargetSize.shrinkWrap,
-                              ),
-                              child: Text(
-                                showAllInterests ? 'Show Less ▲' : 'Show All ▼',
-                                style: const TextStyle(fontWeight: FontWeight.w500),
-                              ),
-                            ),
-                          ),
-                      ],
-                    ),
-                  ),
-
-                  // DESIGN: Details section
-                  // To adjust: Modify container padding, border, or background
-                  Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 20),
-                    decoration: BoxDecoration(
-                      color: Colors.white,
-                    ),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        // DESIGN: Details header row
-                        // To adjust: Modify spacing or alignment
-                        Row(
-                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                          crossAxisAlignment: CrossAxisAlignment.center,
-                          children: [
-                            const Text(
-                              'Details',
-                              style: TextStyle(
-                                color: Color(0xBF0E1342),
-                                fontSize: 25,
-                                fontFamily: 'Quicksand',
-                                fontWeight: FontWeight.w700,
-                              ),
-                            ),
-                            Padding(
-                              padding: const EdgeInsets.only(right: 4),
-                              child: Material(
-                                color: Colors.transparent,
-                                child: InkWell(
-                                  onTap: () {
-                                    setState(() {
-                                      if (isDetailsEditable) {
-                                        final newLocation = locationController.text.trim();
-                                        final newPhone = phoneController.text.trim();
-                                        final newEmail = emailController.text.trim();
-                                        if (newLocation.isNotEmpty) locationText = newLocation;
-                                        if (newPhone.isNotEmpty) phoneText = newPhone;
-                                        if (newEmail.isNotEmpty) emailText = newEmail;
-                                        _saveData();
-                                        isDetailsEditable = false;
-                                      } else {
-                                        isNameEditable = false;
-                                        isBioEditable = false;
-                                        locationController.text = locationText;
-                                        phoneController.text = phoneText;
-                                        emailController.text = emailText;
-                                        isDetailsEditable = true;
-                                      }
-                                    });
-                                  },
-                                  borderRadius: BorderRadius.circular(8),
-                                  child: Padding(
-                                    padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-                                    child: Text(
-                                      isDetailsEditable ? 'Done' : 'Edit',
-                                      style: const TextStyle(
-                                        color: Color(0xBF0E1342),
-                                        fontSize: 18,
-                                        fontFamily: 'Quicksand',
-                                        fontWeight: FontWeight.w600,
-                                        fontStyle: FontStyle.normal,
-                                      ),
-                                    ),
-                                  ),
-                                ),
-                              ),
-                            ),
-                          ],
-                        ),
-                        const SizedBox(height: 20),
-                        // DESIGN: Location row
-                        // To adjust: Modify icon, spacing, or text field style
-                        GestureDetector(
-                          onTap: () {}, // Empty onTap to prevent tap from bubbling up
-                          child: Row(
-                            children: [
-                              const Icon(Icons.location_city, color: Colors.deepOrange),
-                              const SizedBox(width: 10),
-                              Expanded(
-                                child: isDetailsEditable
-                                    ? TextField(
-                                        controller: locationController,
-                                        decoration: InputDecoration(
-                                          hintText: locationPlaceholder,
-                                          border: OutlineInputBorder(),
-                                        ),
-                                      )
-                                    : Text(
-                                        locationText.isEmpty ? locationPlaceholder : locationText,
-                                        style: const TextStyle(
-                                          color: Color(0xBF0E1342),
-                                          fontSize: 15,
-                                          fontFamily: 'Quicksand',
-                                        ),
-                                      ),
-                              ),
-                            ],
-                          ),
-                        ),
-                        const SizedBox(height: 15),
-                        // DESIGN: Phone row
-                        // To adjust: Modify icon, spacing, or text field style
-                        GestureDetector(
-                          onTap: () {}, // Empty onTap to prevent tap from bubbling up
-                          child: Row(
-                            children: [
-                              const Icon(Icons.phone, color: Colors.deepOrange),
-                              const SizedBox(width: 10),
-                              Expanded(
-                                child: isDetailsEditable
-                                    ? TextField(
-                                        controller: phoneController,
-                                        decoration: const InputDecoration(
-                                          hintText: phonePlaceholder,
-                                          border: OutlineInputBorder(),
-                                        ),
-                                      )
-                                    : Text(
-                                        phoneText.isEmpty ? phonePlaceholder : phoneText,
-                                        style: const TextStyle(
-                                          color: Color(0xBF0E1342),
-                                          fontSize: 15,
-                                          fontFamily: 'Quicksand',
-                                        ),
-                                      ),
-                              ),
-                            ],
-                          ),
-                        ),
-                        const SizedBox(height: 15),
-                        // DESIGN: Email row
-                        // To adjust: Modify icon, spacing, or text field style
-                        GestureDetector(
-                          onTap: () {}, // Empty onTap to prevent tap from bubbling up
-                          child: Row(
-                            children: [
-                              const Icon(Icons.email, color: Colors.deepOrange),
-                              const SizedBox(width: 10),
-                              Expanded(
-                                child: isDetailsEditable
-                                    ? TextField(
-                                        controller: emailController,
-                                        decoration: const InputDecoration(
-                                          hintText: emailPlaceholder,
-                                          border: OutlineInputBorder(),
-                                        ),
-                                      )
-                                    : Text(
-                                        emailText.isEmpty ? emailPlaceholder : emailText,
-                                        style: const TextStyle(
-                                          color: Color(0xBF0E1342),
-                                          fontSize: 15,
-                                          fontFamily: 'Quicksand',
-                                        ),
-                                      ),
-                              ),
-                            ],
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                ],
+                    const SizedBox(height: 20),
+                  ],
+                ),
               ),
-            ),
-          ],
+            ],
+          ),
         ),
       ),
     );
