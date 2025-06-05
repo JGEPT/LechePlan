@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:lecheplan/providers/theme_provider.dart';
+import 'package:lecheplan/services/auth_service.dart';
+import 'package:lecheplan/services/profile_service.dart';
 
 //model imports
 import 'package:lecheplan/models/interestoptions.dart';
@@ -9,8 +11,77 @@ import 'package:lecheplan/models/interestoptions.dart';
 import 'package:lecheplan/widgets/reusableWidgets/custom_filledbutton.dart';
 import 'package:lecheplan/widgets/modelWidgets/interests_pill.dart';
 
-class Aboutyoupage extends StatelessWidget {
+class Aboutyoupage extends StatefulWidget {
   const Aboutyoupage({super.key});
+
+  @override
+  State<Aboutyoupage> createState() => _AboutyoupageState();
+}
+
+class _AboutyoupageState extends State<Aboutyoupage> {
+  final Set<String> _selectedInterests = <String>{};
+  bool _isLoading = false;
+
+  void _showMessage(String message, {bool isError = false}) {
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text(message),
+        backgroundColor: isError ? Colors.red : Colors.green,
+        duration: const Duration(seconds: 3),
+      ),
+    );
+  }
+
+  void _toggleInterest(String interest) {
+    setState(() {
+      if (_selectedInterests.contains(interest)) {
+        _selectedInterests.remove(interest);
+      } else {
+        _selectedInterests.add(interest);
+      }
+    });
+  }
+
+  Future<void> _handleDone() async {
+    setState(() {
+      _isLoading = true;
+    });
+
+    try {
+      final currentUser = AuthService.getCurrentUser();
+      if (currentUser == null) {
+        _showMessage('User not authenticated', isError: true);
+        return;
+      }
+
+      if (_selectedInterests.isEmpty) {
+        _showMessage('Please select at least one interest', isError: true);
+        return;
+      }
+
+      final result = await ProfileService.saveUserInterests(
+        userId: currentUser.id,
+        interests: _selectedInterests.toList(),
+      );
+
+      if (result['success']) {
+        _showMessage('Interests saved successfully!');
+        if (mounted) {
+          context.go('/mainhub');
+        }
+      } else {
+        _showMessage(result['message'], isError: true);
+      }
+    } catch (e) {
+      _showMessage('An unexpected error occurred: $e', isError: true);
+    } finally {
+      if (mounted) {
+        setState(() {
+          _isLoading = false;
+        });
+      }
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -21,8 +92,15 @@ class Aboutyoupage extends StatelessWidget {
         width: double.infinity,
         padding: const EdgeInsets.all(40),
         child: Stack(
-          children: const [
-            _MainContent(),
+          children: [
+            _MainContent(
+              selectedInterests: _selectedInterests,
+              onInterestToggle: _toggleInterest,
+            ),
+            _DoneButton(
+              onPressed: _handleDone,
+              isLoading: _isLoading,
+            ),
           ],
         ),
       ),
@@ -31,7 +109,13 @@ class Aboutyoupage extends StatelessWidget {
 }
 
 class _MainContent extends StatelessWidget {
-  const _MainContent();
+  final Set<String> selectedInterests;
+  final Function(String) onInterestToggle;
+
+  const _MainContent({
+    required this.selectedInterests,
+    required this.onInterestToggle,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -39,11 +123,13 @@ class _MainContent extends StatelessWidget {
       child: Column(
         mainAxisAlignment: MainAxisAlignment.start,
         crossAxisAlignment: CrossAxisAlignment.center,
-        children: const [
-          _HeaderText(),
-          SizedBox(height: 10),
-          _InterestsList(),
-          _DoneButton(),
+        children: [
+          const _HeaderText(),
+          const SizedBox(height: 10),
+          _InterestsList(
+            selectedInterests: selectedInterests,
+            onInterestToggle: onInterestToggle,
+          ),
         ],
       ),
     );
@@ -97,7 +183,13 @@ class _HeaderText extends StatelessWidget {
 }
 
 class _InterestsList extends StatelessWidget {
-  const _InterestsList();
+  final Set<String> selectedInterests;
+  final Function(String) onInterestToggle;
+
+  const _InterestsList({
+    required this.selectedInterests,
+    required this.onInterestToggle,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -111,12 +203,55 @@ class _InterestsList extends StatelessWidget {
               runSpacing: 7,
               alignment: WrapAlignment.center,
               children: interestsAndHobbies
-                  .map((interest) => InterestsPill(item: interest, isClickable: true,)).toList(),
+                  .map((interest) => SelectableInterestsPill(
+                        item: interest,
+                        isSelected: selectedInterests.contains(interest),
+                        onTap: () => onInterestToggle(interest),
+                      )).toList(),
             ),
           ),
           const _TopFade(),
           const _BottomFade(),
         ],
+      ),
+    );
+  }
+}
+
+// Custom pill widget that supports external selection control
+class SelectableInterestsPill extends StatelessWidget {
+  final String item;
+  final bool isSelected;
+  final VoidCallback onTap;
+
+  const SelectableInterestsPill({
+    super.key,
+    required this.item,
+    required this.isSelected,
+    required this.onTap,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return GestureDetector(
+      onTap: onTap,
+      child: IntrinsicWidth(
+        child: Container(
+          alignment: Alignment.center,
+          padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 3),
+          decoration: BoxDecoration(
+            color: isSelected ? orangeAccentColor : greyAccentColor,
+            borderRadius: BorderRadius.circular(99),           
+          ),
+          child: Text(
+            item,
+            style: TextStyle(
+              color: isSelected ? lighttextColor : darktextColor.withAlpha(200),
+              fontWeight: FontWeight.w700,
+              fontSize: 15,
+            ),
+          ),
+        ),
       ),
     );
   }
@@ -175,7 +310,13 @@ class _BottomFade extends StatelessWidget {
 }
 
 class _DoneButton extends StatelessWidget {
-  const _DoneButton();
+  final VoidCallback onPressed;
+  final bool isLoading;
+
+  const _DoneButton({
+    required this.onPressed,
+    required this.isLoading,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -185,8 +326,8 @@ class _DoneButton extends StatelessWidget {
         alignment: Alignment.bottomCenter,
         child: FilledButtonDefault(
           buttonHeight: 50,
-          buttonLabel: "Done!",
-          pressAction: () => context.go('/mainhub'),
+          buttonLabel: isLoading ? "Saving..." : "Done!",
+          pressAction: isLoading ? () {} : onPressed,
         ),
       ),
     );

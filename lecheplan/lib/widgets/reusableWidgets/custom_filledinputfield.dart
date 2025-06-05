@@ -6,6 +6,8 @@ class CustomFilledInputField extends StatefulWidget {
   final Color fillColor;
   final String labelText;
   final Color labelFontColor;
+  final TextEditingController? controller;
+  final TextInputType? keyboardType;
 
   const CustomFilledInputField({
     super.key,
@@ -13,6 +15,8 @@ class CustomFilledInputField extends StatefulWidget {
     required this.fillColor,
     required this.labelText,
     required this.labelFontColor,
+    this.controller,
+    this.keyboardType,
   });
 
   @override
@@ -39,7 +43,9 @@ class _CustomFilledInputFieldState extends State<CustomFilledInputField> {
     return Column(
       children: [
         TextField(
+          controller: widget.controller,
           focusNode: _focusNode,
+          keyboardType: widget.keyboardType,
           style: TextStyle(color: widget.inputFontColor),
           decoration: InputDecoration(
             labelText: widget.labelText,

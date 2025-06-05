@@ -157,7 +157,7 @@ class _MainContainer extends StatelessWidget {
 
               const SizedBox(height: 20),
 
-              const _SuggestedForYouSection(),
+              _SuggestedForYouSection(onNavigateToPlans: onNavigateToPlans),
             ],
           ),
         ),
@@ -206,7 +206,7 @@ class _ComingUpSection extends StatelessWidget {
             padding: EdgeInsets.all(0),
             shrinkWrap: true,
             physics: const NeverScrollableScrollPhysics(),
-            itemCount: min(plans.length, 2),
+            itemCount: min(plans.length, 3),
             itemBuilder: (context, index) {
               final plan = plans[index];
               return Padding(
@@ -233,18 +233,18 @@ class _ComingUpSection extends StatelessWidget {
 }
 
 class _SuggestedForYouSection extends StatelessWidget {
-  const _SuggestedForYouSection();
+  final VoidCallback onNavigateToPlans;
+  
+  const _SuggestedForYouSection({required this.onNavigateToPlans});
 
   @override
   Widget build(BuildContext context) {
     return Column(
       spacing: 8,
       mainAxisSize: MainAxisSize.max,
-      children: const [
-        _SectionHeader(),
-        _ActionButtons(),
-        _RecommendationButtons(),
-        _BottomText(),
+      children: [
+        const _SectionHeader(),
+        _ActionButtons(onNavigateToPlans: onNavigateToPlans),
       ],
     );
   }
@@ -270,61 +270,52 @@ class _SectionHeader extends StatelessWidget {
 }
 
 class _ActionButtons extends StatelessWidget {
-  const _ActionButtons();
+  final VoidCallback onNavigateToPlans;
+  
+  const _ActionButtons({required this.onNavigateToPlans});
 
   @override
   Widget build(BuildContext context) {
-    return Row(
-      mainAxisSize: MainAxisSize.max,
+    return Column(
       spacing: 8,
       children: [
-        CustomIconTextButton(
-          label: 'Add\nPeople',
-          iconSize: 30,
-          buttonIcon: Icons.group_add_outlined,
-          pressAction: () {},
-        ),
-        CustomIconTextButton(
-          label: 'Add\nActivity',
-          iconSize: 30,
-          buttonIcon: Icons.edit_calendar_outlined,
-          pressAction: () {},
-        ),
-      ],
-    );
-  }
-}
-
-class _RecommendationButtons extends StatelessWidget {
-  const _RecommendationButtons();
-
-  @override
-  Widget build(BuildContext context) {
-    return Row(
-      mainAxisSize: MainAxisSize.max,
-      spacing: 8,
-      children: [
-        CustomIconTextButton(
-          label: 'Recommend an Activity!',
-          iconSize: 25,
-          buttonIcon: Icons.lightbulb_outline_rounded,   
-          pressAction: () => context.push('/activityrecommendation'),       
-        ),
-        Material(
-          color: orangeAccentColor,
-          borderRadius: BorderRadius.circular(15),
-          child: InkWell(
-            onTap: () {},
-            borderRadius: BorderRadius.circular(15),
-            child: Container(
-              padding: const EdgeInsets.all(17),
-              child: const Icon(
-                Icons.refresh_rounded,
-                color: Colors.white,
-                size: 25,
-              ),
+        Row(
+          mainAxisSize: MainAxisSize.max,
+          spacing: 8,
+          children: [
+            CustomIconTextButton(
+              label: 'Add\nFriends',
+              iconSize: 30,
+              buttonIcon: Icons.person_add_alt_outlined,
+              pressAction: () {},
             ),
-          ),
+            CustomIconTextButton(
+              label: 'Add\nActivity',
+              iconSize: 30,
+              buttonIcon: Icons.edit_calendar_outlined,
+              pressAction: () {},
+            ),
+          ],
+        ),
+
+        //bottom row
+        Row(
+          mainAxisSize: MainAxisSize.max,
+          spacing: 8,
+          children: [
+            CustomIconTextButton(
+              label: 'Create\nGroup',
+              iconSize: 30,
+              buttonIcon: Icons.group_add_outlined,
+              pressAction: () {},
+            ),
+            CustomIconTextButton(
+              label: 'Check\nCalendar',
+              iconSize: 30,
+              buttonIcon: Icons.calendar_month_outlined,
+              pressAction: onNavigateToPlans,
+            ),
+          ],
         ),
       ],
     );
