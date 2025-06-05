@@ -81,8 +81,8 @@ class ProfileService {
       final fileSize = await imageFile.length();
       _profileLogger.info('Image file size: ${fileSize} bytes');
 
-      // Use a simpler file name without subdirectory
-      final fileName = '$userId.jpg';
+      // Organize files in user-specific folders to match RLS policies
+      final fileName = '$userId/profile.jpg';
       
       _profileLogger.info('Attempting to upload to bucket: user-avatar, path: $fileName');
 

@@ -322,18 +322,3 @@ class _ActionButtons extends StatelessWidget {
   }
 }
 
-class _BottomText extends StatelessWidget {
-  const _BottomText();
-
-  @override
-  Widget build(BuildContext context) {
-    return Text(
-      'or try the recommendations below!',
-      style: TextStyle(
-        color: darktextColor,
-        fontSize: 12,
-        fontWeight: FontWeight.w600,
-      ),
-    );
-  }
-}

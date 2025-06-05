@@ -53,18 +53,20 @@ class _PlansPageState extends State<PlansPage> {
 
   Future<void> _fetchAllUsers() async {
     final users = await fetchAllUsers();
-    setState(() {
-      allUsers =
-          users
-              .map(
-                (u) => {
-                  'username': (u['username'] ?? '').toString(),
-                  'profile_photo_url':
-                      (u['profile_photo_url'] ?? '').toString(),
-                },
-              )
-              .toList();
-    });
+    if (mounted) {
+      setState(() {
+        allUsers =
+            users
+                .map(
+                  (u) => {
+                    'username': (u['username'] ?? '').toString(),
+                    'profile_photo_url':
+                        (u['profile_photo_url'] ?? '').toString(),
+                  },
+                )
+                .toList();
+      });
+    }
   }
 
   void _showMonthYearOverlay(BuildContext context) {
