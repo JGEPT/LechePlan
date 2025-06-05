@@ -15,8 +15,20 @@ Future<List<Map<String, dynamic>>> fetchAllGroups() async {
 
     final response = await Supabase.instance.client
         .from('groups')
-        .select('group_id, groupname, group_profile')
-        .eq('group_members.user_id', user.id);
+        .select('''
+          group_id,
+          groupname,
+          group_profile,
+          group_members!inner(
+            member_id,
+            user_profiles!group_members_participant_id_fkey(
+              user_id,
+              username,
+              profile_photo_url
+            )
+          )
+        ''')
+        .eq('group_members.member_id', user.id);
     return (response as List).map((e) => e as Map<String, dynamic>).toList();
   } catch (error) {
     _mainhubLogger.warning(error);

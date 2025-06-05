@@ -211,7 +211,7 @@ class _CreatePlanPageState extends State<CreatePlanPage> {
             begin: Alignment.topCenter,
             end: Alignment.bottomCenter,
             colors: [Color(0xFFF8F5FF), Colors.white],
-          ),
+          ), 
         ),
         child: SafeArea(
           child: SingleChildScrollView(
