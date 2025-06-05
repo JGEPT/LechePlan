@@ -505,77 +505,83 @@ class _PlansPageState extends State<PlansPage> {
                             horizontal: 16,
                             vertical: 4,
                           ),
-                          child: SingleChildScrollView(
-                            scrollDirection: Axis.horizontal,
-                            child: Row(
-                              children:
-                                  allUsernames.map((user) {
-                                    final selected = selectedUsers.contains(
-                                      user,
-                                    );
-                                    final avatarUrl = _getAvatarForUser(user);
-                                    return GestureDetector(
-                                      onTap: () {
-                                        setState(() {
-                                          if (selected) {
-                                            selectedUsers.remove(user);
-                                          } else {
-                                            selectedUsers.add(user);
-                                          }
-                                        });
-                                      },
-                                      child: Padding(
-                                        padding: const EdgeInsets.symmetric(
-                                          horizontal: 6,
-                                        ),
-                                        child: Column(
-                                          mainAxisSize: MainAxisSize.min,
-                                          children: [
-                                            Container(
-                                              decoration: BoxDecoration(
-                                                shape: BoxShape.circle,
-                                                border: Border.all(
+                          child: Scrollbar(
+                            thumbVisibility: true,
+                            thickness: 6,
+                            radius: const Radius.circular(8),
+                            child: SingleChildScrollView(
+                              scrollDirection: Axis.horizontal,
+                              child: Row(
+                                children:
+                                    allUsernames.map((user) {
+                                      final selected = selectedUsers.contains(
+                                        user,
+                                      );
+                                      final avatarUrl = _getAvatarForUser(user);
+                                      return GestureDetector(
+                                        onTap: () {
+                                          setState(() {
+                                            if (selected) {
+                                              selectedUsers.remove(user);
+                                            } else {
+                                              selectedUsers.add(user);
+                                            }
+                                          });
+                                        },
+                                        child: Padding(
+                                          padding: const EdgeInsets.symmetric(
+                                            horizontal: 6,
+                                          ),
+                                          child: Column(
+                                            mainAxisSize: MainAxisSize.min,
+                                            children: [
+                                              Container(
+                                                decoration: BoxDecoration(
+                                                  shape: BoxShape.circle,
+                                                  border: Border.all(
+                                                    color:
+                                                        selected
+                                                            ? orangeAccentColor
+                                                            : Colors
+                                                                .transparent,
+                                                    width: 3,
+                                                  ),
+                                                ),
+                                                child: CircleAvatar(
+                                                  radius: 22,
+                                                  backgroundImage:
+                                                      (avatarUrl != null &&
+                                                              avatarUrl
+                                                                  .isNotEmpty)
+                                                          ? NetworkImage(
+                                                            avatarUrl,
+                                                          )
+                                                          : const AssetImage(
+                                                                'assets/images/sampleAvatar.jpg',
+                                                              )
+                                                              as ImageProvider,
+                                                ),
+                                              ),
+                                              const SizedBox(height: 4),
+                                              Text(
+                                                user,
+                                                style: TextStyle(
+                                                  fontSize: 13,
+                                                  fontWeight: FontWeight.w600,
                                                   color:
                                                       selected
                                                           ? orangeAccentColor
-                                                          : Colors.transparent,
-                                                  width: 3,
+                                                          : darktextColor,
                                                 ),
+                                                overflow: TextOverflow.ellipsis,
+                                                maxLines: 1,
                                               ),
-                                              child: CircleAvatar(
-                                                radius: 22,
-                                                backgroundImage:
-                                                    (avatarUrl != null &&
-                                                            avatarUrl
-                                                                .isNotEmpty)
-                                                        ? NetworkImage(
-                                                          avatarUrl,
-                                                        )
-                                                        : const AssetImage(
-                                                              'assets/images/sampleAvatar.jpg',
-                                                            )
-                                                            as ImageProvider,
-                                              ),
-                                            ),
-                                            const SizedBox(height: 4),
-                                            Text(
-                                              user,
-                                              style: TextStyle(
-                                                fontSize: 13,
-                                                fontWeight: FontWeight.w600,
-                                                color:
-                                                    selected
-                                                        ? orangeAccentColor
-                                                        : darktextColor,
-                                              ),
-                                              overflow: TextOverflow.ellipsis,
-                                              maxLines: 1,
-                                            ),
-                                          ],
+                                            ],
+                                          ),
                                         ),
-                                      ),
-                                    );
-                                  }).toList(),
+                                      );
+                                    }).toList(),
+                              ),
                             ),
                           ),
                         ),

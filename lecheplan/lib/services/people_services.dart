@@ -27,32 +27,6 @@ Future<List<Map<String, dynamic>>> fetchAllFriends() async {
   }
 }
 
-Future<List<Map<String, dynamic>>> fetchAllGroups() async {
-  try {
-    // Temporarily hardcoded userId for testing
-    final userId = '00000000-0000-0000-0000-000000000001';
-
-    // Fetch groups the user is a member of, including group details and member usernames
-    final response = await Supabase.instance.client
-      .from('group_members')
-      .select('group_id, groups!inner(group_id, groupname, activity, group_members(member_id, user_profiles(username)))')
-      .eq('member_id', userId);
-
-    if (response is List) {
-      // The response structure will be a list of group_members entries.
-      // We need to extract the nested group data.
-      return response.map((entry) => entry['groups'] as Map<String, dynamic>).toList();
-    } else {
-      _peopleLogger.warning('Unexpected response format for fetchAllGroups: $response');
-      return [];
-    }
-
-  } catch (error) {
-    _peopleLogger.warning('Error fetching groups: $error');
-    return []; // Return empty list on error
-  }
-}
-
 Future<List<Map<String, dynamic>>> fetchAllUsers() async {
   try {
     final response = await Supabase.instance.client

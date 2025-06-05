@@ -71,8 +71,10 @@ class _PeoplePageState extends State<PeoplePage> {
     }
     // username here key but remind to change key
     return _allUsersData
-        .where((user) => 
-          user['username'].toLowerCase().contains(query.toLowerCase()))
+        .where(
+          (user) =>
+              user['username'].toLowerCase().contains(query.toLowerCase()),
+        )
         .toList();
   }
 
@@ -81,6 +83,7 @@ class _PeoplePageState extends State<PeoplePage> {
       _searchQuery = query.toLowerCase();
     });
   }
+
   // Helper to get the friend's username from a friend entry
   String _getFriendUsername(Map<String, dynamic> friendData) {
     if (friendData['member1_id'] == _currentTestUserId) {
@@ -88,16 +91,18 @@ class _PeoplePageState extends State<PeoplePage> {
     } else if (friendData['member2_id'] == _currentTestUserId) {
       return friendData['user1']?['username'] ?? 'Unknown Friend';
     } else {
-      return 'Unknown Friend'; 
+      return 'Unknown Friend';
     }
   }
+
   void _showAddCreateDialog(BuildContext context) {
     showDialog(
       context: context,
       builder: (BuildContext context) {
         return StatefulBuilder(
           builder: (context, setState) {
-            List<Map<String, dynamic>> dialogFilteredPeople = _getFilteredPeople(_addFriendSearchQuery);
+            List<Map<String, dynamic>> dialogFilteredPeople =
+                _getFilteredPeople(_addFriendSearchQuery);
 
             return Dialog(
               shape: RoundedRectangleBorder(
@@ -162,7 +167,9 @@ class _PeoplePageState extends State<PeoplePage> {
                                   onSearchChanged: (value) {
                                     setState(() {
                                       _addFriendSearchQuery = value;
-                                      dialogFilteredPeople = _getFilteredPeople(_addFriendSearchQuery);
+                                      dialogFilteredPeople = _getFilteredPeople(
+                                        _addFriendSearchQuery,
+                                      );
                                     });
                                   },
                                 ),
@@ -174,7 +181,8 @@ class _PeoplePageState extends State<PeoplePage> {
                                     shrinkWrap: true,
                                     itemCount: dialogFilteredPeople.length,
                                     itemBuilder: (context, index) {
-                                      final person = dialogFilteredPeople[index];
+                                      final person =
+                                          dialogFilteredPeople[index];
                                       return Container(
                                         margin: const EdgeInsets.only(
                                           bottom: 4,
@@ -206,7 +214,8 @@ class _PeoplePageState extends State<PeoplePage> {
                                             mainAxisSize: MainAxisSize.min,
                                             children: [
                                               Text(
-                                                person['username'] ?? 'Unknown User', // Use 'username' from fetched users data
+                                                person['username'] ??
+                                                    'Unknown User', // Use 'username' from fetched users data
                                                 style: const TextStyle(
                                                   fontFamily: 'Quicksand',
                                                   fontWeight: FontWeight.w600,
@@ -235,7 +244,9 @@ class _PeoplePageState extends State<PeoplePage> {
                                               size: 24,
                                             ),
                                             onPressed: () {
-                                              print('Add friend: ${person['user_id']}'); // Use user_id
+                                              print(
+                                                'Add friend: ${person['user_id']}',
+                                              ); // Use user_id
                                             },
                                           ),
                                         ),
@@ -263,7 +274,10 @@ class _PeoplePageState extends State<PeoplePage> {
                                     onChanged: (value) {
                                       setState(() {
                                         _createGroupSearchQuery = value;
-                                        dialogFilteredPeople = _getFilteredPeople(_createGroupSearchQuery);
+                                        dialogFilteredPeople =
+                                            _getFilteredPeople(
+                                              _createGroupSearchQuery,
+                                            );
                                       });
                                     },
                                     decoration: InputDecoration(
@@ -290,7 +304,9 @@ class _PeoplePageState extends State<PeoplePage> {
                                   onSearchChanged: (value) {
                                     setState(() {
                                       _createGroupSearchQuery = value;
-                                      dialogFilteredPeople = _getFilteredPeople(_createGroupSearchQuery);
+                                      dialogFilteredPeople = _getFilteredPeople(
+                                        _createGroupSearchQuery,
+                                      );
                                     });
                                   },
                                 ),
@@ -301,7 +317,8 @@ class _PeoplePageState extends State<PeoplePage> {
                                     shrinkWrap: true,
                                     itemCount: dialogFilteredPeople.length,
                                     itemBuilder: (context, index) {
-                                      final person = dialogFilteredPeople[index];
+                                      final person =
+                                          dialogFilteredPeople[index];
                                       return Container(
                                         margin: const EdgeInsets.only(
                                           bottom: 4,
@@ -333,7 +350,8 @@ class _PeoplePageState extends State<PeoplePage> {
                                             mainAxisSize: MainAxisSize.min,
                                             children: [
                                               Text(
-                                                person['username'] ?? 'Unknown User',
+                                                person['username'] ??
+                                                    'Unknown User',
                                                 style: const TextStyle(
                                                   fontFamily: 'Quicksand',
                                                   fontWeight: FontWeight.w600,
@@ -362,7 +380,9 @@ class _PeoplePageState extends State<PeoplePage> {
                                               size: 24,
                                             ),
                                             onPressed: () {
-                                              print('Add user to group: ${person['user_id']}');
+                                              print(
+                                                'Add user to group: ${person['user_id']}',
+                                              );
                                             },
                                           ),
                                         ),
@@ -391,12 +411,15 @@ class _PeoplePageState extends State<PeoplePage> {
       return _friendsData;
     }
     // Filter by the friend's username
-    return _friendsData.where((friend) => 
-      _getFriendUsername(friend).toLowerCase().contains(_searchQuery)
-    ).toList();
+    return _friendsData
+        .where(
+          (friend) =>
+              _getFriendUsername(friend).toLowerCase().contains(_searchQuery),
+        )
+        .toList();
   }
 
-  List<Map<String, dynamic>> get filteredGroups {
+  List<Group> get filteredGroups {
     if (_searchQuery.isEmpty) {
       return widget.groups;
     }
@@ -422,12 +445,13 @@ class _PeoplePageState extends State<PeoplePage> {
               _HeaderContent(onSearchChanged: _updateSearchQuery),
               const _PeopleBar(),
               Expanded(
-                child: _isLoading
-                    ? Center(child: CircularProgressIndicator())
-                    : _MainContent(
-                        filteredFriends: filteredFriends,
-                        filteredGroups: filteredGroups,
-                      ),
+                child:
+                    _isLoading
+                        ? Center(child: CircularProgressIndicator())
+                        : _MainContent(
+                          filteredFriends: filteredFriends,
+                          filteredGroups: filteredGroups,
+                        ),
               ),
             ],
           ),
@@ -443,31 +467,18 @@ class _PeoplePageState extends State<PeoplePage> {
               shape: BoxShape.circle,
               boxShadow: [defaultBoxShadow],
             ),
-          ),
-          Positioned(
-            bottom: 95,
-            right: 15,
-            child: Container(
-              height: 55,
-              width: 55,
-              decoration: BoxDecoration(
-                color: orangeAccentColor,
-                shape: BoxShape.circle,
-                boxShadow: [defaultBoxShadow],
+            child: IconButton(
+              padding: EdgeInsets.zero,
+              icon: const Icon(
+                Icons.group_add_outlined,
+                color: Colors.white,
+                size: 30,
               ),
-              child: IconButton(
-                padding: EdgeInsets.zero,
-                icon: const Icon(
-                  Icons.group_add_outlined,
-                  color: Colors.white,
-                  size: 30,
-                ),
-                onPressed: () => _showAddCreateDialog(context),
-              ),
+              onPressed: () => _showAddCreateDialog(context),
             ),
           ),
-        ],
-      ),
+        ),
+      ],
     );
   }
 }
@@ -605,12 +616,7 @@ class _NotificationAndAvatar extends StatelessWidget {
             size: 30,
           ),
         ),
-        GestureDetector(
-          onTap: onProfileTap,
-          child: UserAvatar(
-            radius: 22,
-          ),
-        ),
+        GestureDetector(onTap: onProfileTap, child: UserAvatar(radius: 22)),
       ],
     );
   }
@@ -663,7 +669,7 @@ class _PeopleBar extends StatelessWidget {
 
 class _MainContent extends StatelessWidget {
   final List<Map<String, dynamic>> filteredFriends;
-  final List<Map<String, dynamic>> filteredGroups;
+  final List<Group> filteredGroups;
 
   // Temporarily hardcoded userId for testing - use the same one as in people_services.dart
   final String _currentTestUserId = '00000000-0000-0000-0000-000000000001';
@@ -691,69 +697,77 @@ class _MainContent extends StatelessWidget {
         //friends tab
         Container(
           padding: const EdgeInsets.symmetric(horizontal: 20),
-          child: filteredFriends.isEmpty
-              ? const Center(
-                  child: Text(
-                    'No friends found',
-                    style: TextStyle(
-                      fontFamily: 'Quicksand',
-                      fontSize: 16,
-                      color: Colors.grey,
+          child:
+              filteredFriends.isEmpty
+                  ? const Center(
+                    child: Text(
+                      'No friends found',
+                      style: TextStyle(
+                        fontFamily: 'Quicksand',
+                        fontSize: 16,
+                        color: Colors.grey,
+                      ),
                     ),
+                  )
+                  : ListView.builder(
+                    padding: const EdgeInsets.only(bottom: 80),
+                    itemCount: filteredFriends.length,
+                    itemBuilder: (context, index) {
+                      final friend = filteredFriends[index];
+                      // Determine the friend's user ID to pass to the card if needed for navigation/actions
+                      final friendUserId =
+                          friend['member1_id'] == _currentTestUserId
+                              ? friend['member2_id']
+                              : friend['member1_id'];
+                      return _FriendCard(
+                        userID: friendUserId ?? '', // Pass the friend's user ID
+                        name: _getFriendUsername(
+                          friend,
+                        ), // Use the helper to get friend's username
+                        activity:
+                            friend['activity']?.toString() ?? 'No activity',
+                        profile:
+                            'assets/images/sampleAvatar.jpg', // Placeholder
+                        onTap: () {
+                          // adding em to an activity
+                        },
+                      );
+                    },
                   ),
-                )
-              : ListView.builder(
-                  padding: const EdgeInsets.only(bottom: 80),
-                  itemCount: filteredFriends.length,
-                  itemBuilder: (context, index) {
-                    final friend = filteredFriends[index];
-                    // Determine the friend's user ID to pass to the card if needed for navigation/actions
-                    final friendUserId = friend['member1_id'] == _currentTestUserId ? friend['member2_id'] : friend['member1_id'];
-                    return _FriendCard(
-                      userID: friendUserId ?? '', // Pass the friend's user ID
-                      name: _getFriendUsername(friend), // Use the helper to get friend's username
-                      activity: friend['activity']?.toString() ?? 'No activity',
-                      profile: 'assets/images/sampleAvatar.jpg', // Placeholder
-                      onTap: () {
-                        // adding em to an activity
-                      },
-                    );
-                  },
-                ),
         ),
         //group tab
         Container(
-            padding: const EdgeInsets.symmetric(horizontal: 20),
-            child:
-                filteredGroups.isEmpty
-                    ? const Center(
-                      child: Text(
-                        'No groups found',
-                        style: TextStyle(
-                          fontFamily: 'Quicksand',
-                          fontSize: 16,
-                          color: Colors.grey,
-                        ),
+          padding: const EdgeInsets.symmetric(horizontal: 20),
+          child:
+              filteredGroups.isEmpty
+                  ? const Center(
+                    child: Text(
+                      'No groups found',
+                      style: TextStyle(
+                        fontFamily: 'Quicksand',
+                        fontSize: 16,
+                        color: Colors.grey,
                       ),
-                    )
-                    : ListView.builder(
-                      padding: const EdgeInsets.only(bottom: 80),
-                      itemCount: filteredGroups.length,
-                      itemBuilder: (context, index) {
-                        final group = filteredGroups[index];
-                        return _GroupCard(
-                          groupID: group.groupID,
-                          groupName: group.groupName,
-                          groupProfile: group.groupProfile,
-                          memberCount: group.memberCount,
-                          activity: group.activity,
-                          members: group.members,
-                          onTap: () {
-                            // View group details
-                          },
-                        );
-                      },
                     ),
+                  )
+                  : ListView.builder(
+                    padding: const EdgeInsets.only(bottom: 80),
+                    itemCount: filteredGroups.length,
+                    itemBuilder: (context, index) {
+                      final group = filteredGroups[index];
+                      return _GroupCard(
+                        groupID: group.groupID,
+                        groupName: group.groupName,
+                        groupProfile: group.groupProfile,
+                        memberCount: group.memberCount,
+                        activity: group.activity,
+                        members: group.members,
+                        onTap: () {
+                          // View group details
+                        },
+                      );
+                    },
+                  ),
         ),
       ],
     );
@@ -778,15 +792,19 @@ class _FriendCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     // Format of the activity text
-    final String activityText = activity != 'No activity' && activity != 'null'
-        ? '${activity} upcoming activity planned'
-        : 'No activity';
+    final String activityText =
+        activity != 'No activity' && activity != 'null'
+            ? '${activity} upcoming activity planned'
+            : 'No activity';
 
     return Card(
       margin: const EdgeInsets.only(bottom: 5),
       color: Colors.white,
       elevation: 0,
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12), side: BorderSide(color: greyAccentColor, width: 2)),
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(12),
+        side: BorderSide(color: greyAccentColor, width: 2),
+      ),
       child: ListTile(
         contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
         leading: CircleAvatar(backgroundImage: AssetImage(profile), radius: 25),
@@ -800,9 +818,7 @@ class _FriendCard extends StatelessWidget {
         ),
         subtitle: Text(
           activityText,
-          style: const TextStyle(
-            fontFamily: 'Quicksand',
-          ),
+          style: const TextStyle(fontFamily: 'Quicksand'),
         ),
         trailing: Icon(
           Icons.arrow_forward_ios_rounded,
@@ -840,7 +856,10 @@ class _GroupCard extends StatelessWidget {
       margin: const EdgeInsets.only(bottom: 5),
       color: Colors.white,
       elevation: 0,
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12), side: BorderSide(color: greyAccentColor, width: 2)),
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(12),
+        side: BorderSide(color: greyAccentColor, width: 2),
+      ),
       child: ListTile(
         contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
         leading: CircleAvatar(

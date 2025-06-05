@@ -212,24 +212,27 @@ class CalendarWidget extends StatelessWidget {
                                           ),
                                         ],
                                       ),
-                                      if (plansForDay.isNotEmpty)
+                                      if (plansForDay.isNotEmpty || isToday)
                                         Positioned(
-                                          bottom: 0,
-                                          child:
-                                              plansForDay.length == 1
-                                                  ? Container(
-                                                    width: 7,
-                                                    height: 7,
-                                                    decoration: BoxDecoration(
-                                                      color: orangeAccentColor,
-                                                      shape: BoxShape.circle,
-                                                    ),
-                                                  )
-                                                  : Icon(
-                                                    Icons.workspaces,
-                                                    color: orangeAccentColor,
-                                                    size: 15,
-                                                  ),
+                                          bottom: 4,
+                                          child: Container(
+                                            width: 8,
+                                            height: 8,
+                                            decoration: BoxDecoration(
+                                              color:
+                                                  isToday
+                                                      ? Colors.white
+                                                      : orangeAccentColor,
+                                              shape: BoxShape.circle,
+                                              border: Border.all(
+                                                color:
+                                                    isToday
+                                                        ? orangeAccentColor
+                                                        : Colors.transparent,
+                                                width: 1.5,
+                                              ),
+                                            ),
+                                          ),
                                         ),
                                     ],
                                   ),
