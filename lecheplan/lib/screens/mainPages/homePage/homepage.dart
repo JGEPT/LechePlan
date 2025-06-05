@@ -337,7 +337,7 @@ class _BottomText extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Text(
-      'or try the recomendations below!',
+      'or try the recommendations below!',
       style: TextStyle(
         color: darktextColor,
         fontSize: 12,
