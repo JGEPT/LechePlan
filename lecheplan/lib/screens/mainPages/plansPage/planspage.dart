@@ -8,12 +8,19 @@ import 'package:lecheplan/widgets/modelWidgets/group_calendar_widget.dart'
     as group_cal;
 import 'package:lecheplan/services/plans_services.dart';
 import 'package:go_router/go_router.dart';
+import 'package:lecheplan/screens/mainPages/plansPage/create_plan_page.dart';
 
 class PlansPage extends StatefulWidget {
   final List<Plan> plans;
   final bool isLoading;
+  final VoidCallback? onPlanCreated;
 
-  const PlansPage({super.key, required this.plans, required this.isLoading});
+  const PlansPage({
+    super.key,
+    required this.plans,
+    required this.isLoading,
+    this.onPlanCreated,
+  });
 
   @override
   State<PlansPage> createState() => _PlansPageState();
@@ -150,9 +157,11 @@ class _PlansPageState extends State<PlansPage> {
                       _PlanModalButton(
                         icon: Icons.event_note_rounded,
                         label: 'Create Own',
-                        onTap: () {
-                          // TODO: Implement create own
+                        onTap: () async {
                           Navigator.pop(context);
+                          await context.push('/createplan');
+                          if (widget.onPlanCreated != null)
+                            widget.onPlanCreated!();
                         },
                         color: orangeAccentColor,
                       ),
@@ -296,8 +305,6 @@ class _PlansPageState extends State<PlansPage> {
                         ),
                       ),
 
-
-                      
                       Expanded(
                         child: MouseRegion(
                           onEnter: (_) => setState(() => calendarHover = true),
