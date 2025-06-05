@@ -8,10 +8,10 @@ Future<List<Map<String, dynamic>>> fetchAllFriends() async {
     // Temporarily hardcoded userId for testing
     final userId = '00000000-0000-0000-0000-000000000001';
 
-    // Joining the users table to fetch friends and select the username
+    // Joining the user_profiles table to fetch friends and select the username
     final response = await Supabase.instance.client
       .from('friends')
-      .select('member1_id, member2_id, activity, user1:users!friends_member1_id_fkey(username), user2:users!friends_member2_id_fkey(username)')
+      .select('member1_id, member2_id, activity, user1:user_profiles!friends_member1_id_fkey(username), user2:user_profiles!friends_member2_id_fkey(username)')
       .or('member1_id.eq.$userId,member2_id.eq.$userId');
 
     if (response is List) {
@@ -35,7 +35,7 @@ Future<List<Map<String, dynamic>>> fetchAllGroups() async {
     // Fetch groups the user is a member of, including group details and member usernames
     final response = await Supabase.instance.client
       .from('group_members')
-      .select('group_id, groups!inner(group_id, groupname, activity, group_members(member_id, users(username)))')
+      .select('group_id, groups!inner(group_id, groupname, activity, group_members(member_id, user_profiles(username)))')
       .eq('member_id', userId);
 
     if (response is List) {
@@ -56,7 +56,7 @@ Future<List<Map<String, dynamic>>> fetchAllGroups() async {
 Future<List<Map<String, dynamic>>> fetchAllUsers() async {
   try {
     final response = await Supabase.instance.client
-      .from('users')
+      .from('user_profiles')
       .select('user_id, username'); // Select user_id and username
 
     if (response is List) {
