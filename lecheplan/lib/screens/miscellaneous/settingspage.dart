@@ -1,8 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:lecheplan/providers/theme_provider.dart';
-import 'package:lecheplan/screens/mainPages/profilePage/profilepage.dart';
-import 'package:lecheplan/screens/miscellaneous/settingspage.dart';
 
 
 class SettingsPage extends StatelessWidget {

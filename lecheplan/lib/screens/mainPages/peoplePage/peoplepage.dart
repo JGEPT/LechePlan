@@ -2,8 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:lecheplan/providers/theme_provider.dart';
 import 'package:go_router/go_router.dart';
 import 'package:lecheplan/models/friendlist.dart';
-import 'package:lecheplan/models/grouplist.dart';
-import 'package:lecheplan/screens/mainPages/profilePage/profilepage.dart';
 import 'package:lecheplan/models/group_model.dart';
 
 class PeoplePage extends StatefulWidget {
