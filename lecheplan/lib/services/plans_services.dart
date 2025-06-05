@@ -14,14 +14,14 @@ Future<List<Map<String, dynamic>>> fetchAllUserPlans() async {
       response = await Supabase.instance.client
           .from('plans')
           .select(
-            '*, plan_participants(*, users(username, profile_photo_url))',
+            '*, plan_participants(*, user_profiles(username, profile_photo_url))',
           );
     } else {
       // User logged in: get only their plans
       response = await Supabase.instance.client
           .from('plan_participants')
           .select(
-            'plans(*, plan_participants(*, users(username, profile_photo_url)))',
+            'plans(*, plan_participants(*, user_profiles(username, profile_photo_url)))',
           )
           .eq('participant_id', userId);
     }
@@ -52,7 +52,7 @@ Future<List<Map<String, dynamic>>> fetchAllUserPlans() async {
 Future<List<Map<String, dynamic>>> fetchAllUsers() async {
   try {
     final response = await Supabase.instance.client
-        .from('users')
+        .from('user_profiles')
         .select('username, profile_photo_url');
     return (response as List).map((e) => e as Map<String, dynamic>).toList();
   } catch (error) {

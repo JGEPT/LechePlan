@@ -21,11 +21,11 @@ Future<List<Map<String, dynamic>>> fetchGroupMembers(String groupId) async {
   try {
     final response = await Supabase.instance.client
         .from('group_members')
-        .select('users(user_id, username, profile_photo_url)')
+        .select('user_profiles(user_id, username, profile_photo_url)')
         .eq('group_id', groupId);
-    // The response is a list of maps with a 'users' key
+    // The response is a list of maps with a 'user_profiles' key
     return (response as List)
-        .map((e) => e['users'] as Map<String, dynamic>)
+        .map((e) => e['user_profiles'] as Map<String, dynamic>)
         .where((user) => user != null)
         .toList();
   } catch (error) {
