@@ -6,6 +6,7 @@ class CustomFilledPasswordField extends StatefulWidget {
   final Color fillColor;
   final String labelText;
   final Color labelFontColor;
+  final TextEditingController? controller;
 
   const CustomFilledPasswordField({
     super.key,
@@ -13,6 +14,7 @@ class CustomFilledPasswordField extends StatefulWidget {
     required this.fillColor,
     required this.labelText,
     required this.labelFontColor,
+    this.controller,
   });
 
   @override
@@ -39,6 +41,7 @@ class _CustomFilledPasswordFieldState extends State<CustomFilledPasswordField> {
     return Column(
       children: [
         TextField(
+          controller: widget.controller,
           focusNode: _focusNode,
           obscureText: true,
           enableSuggestions: false,

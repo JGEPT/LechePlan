@@ -1,8 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:lecheplan/screens/mainPages/profilePage/editprof.dart';
+import 'package:lecheplan/widgets/modelWidgets/interests_pill.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'dart:ui';
 import 'dart:convert';
+import 'package:lecheplan/screens/miscellaneous/settingspage.dart';
+import 'package:lecheplan/providers/theme_provider.dart';
 
 const List<String> kFixedInterests = [
   'Social Media',
@@ -32,16 +35,15 @@ class _ProfilePageState extends State<ProfilePage> {
   // DESIGN: List of interests for the profile
   // To adjust: Add or remove interests, change text, or modify the list structure
   final List<String> interests = [
-    'Social Media',
-    'Influencer',
     'Broadcasting',
-    'Social Media Design and Plans',
     'Art',
     'Music',
+    'AI',
+    'Social Media',
+    'Influencer',
     'Computer Science',
     'Software Engineering',
     'Data Science',
-    'AI',
     'Machine Learning',
     'Cybersecurity',
     'Blockchain',
@@ -61,7 +63,7 @@ class _ProfilePageState extends State<ProfilePage> {
   // DESIGN: Placeholder text for empty fields
   // To adjust: Change placeholder messages
   static const String namePlaceholder = 'Add your name';
-  static const String bioPlaceholder = 'Add your bio...';
+  static const String bioPlaceholder = 'Add to your bio...';
   static const String locationPlaceholder = 'Add your location';
   static const String phonePlaceholder = 'Add your phone number';
   static const String emailPlaceholder = 'Add your email';
@@ -106,13 +108,13 @@ class _ProfilePageState extends State<ProfilePage> {
     }
   }
 
-  // Shows the custom modal for edit options (edit profile, select profile picture)
+  // Shows the custom modal for edit options (edit profile, select profile cture)
   void showEditProfileModal(BuildContext context) {
     showGeneralDialog(
       context: context,
       barrierDismissible: true,
       barrierLabel: "EditProfile",
-      barrierColor: const Color(0xCCFD5903).withOpacity(0.1),
+      barrierColor: const Color(0xCCFD5903).withAlpha(30),
       transitionDuration: const Duration(milliseconds: 100),
       pageBuilder: (context, anim1, anim2) {
         return Stack(
@@ -238,13 +240,13 @@ class _ProfilePageState extends State<ProfilePage> {
           // Semi-transparent overlay for darkening the background
           Positioned.fill(
             child: Container(
-              color: Colors.black.withOpacity(0.2),
+              color: Colors.black.withAlpha(50),
             ),
           ),
 
           // Main scrollable content (profile info, interests, details)
           SingleChildScrollView(
-            padding: const EdgeInsets.only(top: 100),
+            padding: const EdgeInsets.only(top: 80, bottom: 60),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
@@ -266,12 +268,13 @@ class _ProfilePageState extends State<ProfilePage> {
                           fontStyle: nameText.isEmpty ? FontStyle.italic : FontStyle.normal,
                         ),
                       ),
-                      const SizedBox(height: 4),
+                      const SizedBox(height: 0),
                       Text(
                         bioText.isEmpty ? bioPlaceholder : bioText,
                         style: TextStyle(
                           color: Colors.white,
                           fontSize: 17,
+                          fontWeight: FontWeight.w500,
                           fontStyle: bioText.isEmpty ? FontStyle.italic : FontStyle.normal,
                         ),
                       ),
@@ -295,26 +298,16 @@ class _ProfilePageState extends State<ProfilePage> {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       // Interests section
-                      const Text(
+                      Text(
                         'Interests',
-                        style: TextStyle(fontSize: 30, fontWeight: FontWeight.bold, color: Colors.deepOrange),
+                        style: TextStyle(fontSize: 30, fontWeight: FontWeight.bold, color: orangeAccentColor),
                       ),
-                      const SizedBox(height: 10),
+                      const SizedBox(height: 8),
                       Wrap(
-                        spacing: 3,
-                        runSpacing: 2,
-                        children: displayedInterests.map((name) => Chip(
-                          label: Text(name),
-                          backgroundColor: Colors.deepOrangeAccent,
-                          labelStyle: const TextStyle(
-                            color: Colors.white,
-                            fontWeight: FontWeight.w700,
-                          ),
-                          padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(20),
-                          ),
-                        )).toList(),
+                        spacing: 4,
+                        runSpacing: 5,
+                        children: displayedInterests
+                          .map((interest) => InterestsPill(item: interest, isClickable: false,)).toList()
                       ),
                       const SizedBox(height: 8),
                       // Show All / Show Less toggle
@@ -325,7 +318,7 @@ class _ProfilePageState extends State<ProfilePage> {
                           });
                         },
                         style: TextButton.styleFrom(
-                          foregroundColor: Colors.deepOrange,
+                          foregroundColor: orangeAccentColor,
                           padding: EdgeInsets.zero,
                           minimumSize: const Size(50, 30),
                           tapTargetSize: MaterialTapTargetSize.shrinkWrap,
@@ -339,16 +332,16 @@ class _ProfilePageState extends State<ProfilePage> {
                       const SizedBox(height: 20),
 
                       // Details section
-                      const Text(
+                      Text(
                         'Details',
-                        style: TextStyle(fontSize: 30, fontWeight: FontWeight.bold, color: Colors.deepOrange),
+                        style: TextStyle(fontSize: 30, fontWeight: FontWeight.bold, color: orangeAccentColor),
                       ),
                       const SizedBox(height: 10),
 
                       // Location row
                       Row(
                         children: [
-                          const Icon(Icons.location_city, color: Colors.deepOrange),
+                          Icon(Icons.location_city, color: orangeAccentColor),
                           const SizedBox(width: 10),
                           Text(
                             locationText.isEmpty ? locationPlaceholder : locationText,
@@ -363,7 +356,7 @@ class _ProfilePageState extends State<ProfilePage> {
                       // Phone row
                       Row(
                         children: [
-                          const Icon(Icons.phone, color: Colors.deepOrange),
+                          Icon(Icons.phone, color: orangeAccentColor),
                           const SizedBox(width: 10),
                           Text(
                             phoneText.isEmpty ? phonePlaceholder : phoneText,
@@ -378,7 +371,7 @@ class _ProfilePageState extends State<ProfilePage> {
                       // Email row
                       Row(
                         children: [
-                          const Icon(Icons.email, color: Colors.deepOrange),
+                          Icon(Icons.email, color: orangeAccentColor),
                           const SizedBox(width: 10),
                           Text(
                             emailText.isEmpty ? emailPlaceholder : emailText,
@@ -410,10 +403,18 @@ class _ProfilePageState extends State<ProfilePage> {
           ),
 
           // More icon at the top right (no functionality yet)
-          const Positioned(
+          Positioned(
             top: 50,
             right: 10,
-            child: Icon(Icons.more_vert, color: Colors.white, size: 28),
+            child: GestureDetector(
+              onTap: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(builder: (context) => const SettingsPage()),
+                );
+              },
+              child: const Icon(Icons.more_vert, color: Colors.white, size: 28),
+            ),
           ),
         ],
       ),

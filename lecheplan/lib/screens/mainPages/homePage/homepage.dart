@@ -1,5 +1,6 @@
 import 'package:lecheplan/widgets/reusableWidgets/custom_icontextbutton.dart';
 import 'package:go_router/go_router.dart';
+import 'dart:math';
 
 import 'package:flutter/material.dart';
 import 'package:lecheplan/providers/theme_provider.dart';
@@ -14,14 +15,18 @@ import 'package:lecheplan/widgets/modelWidgets/upcomingplans_card.dart';
 class HomePage extends StatefulWidget {
   final List<Plan> plans;
   final bool isLoading;
-  
+  final VoidCallback? onProfileTap;  
+  final VoidCallback onNavigateToPlans;  
+
   const HomePage({
     super.key,
     required this.plans,
     required this.isLoading,
+    this.onProfileTap,
+    required this.onNavigateToPlans,
   });
 
-  @override  
+  @override
   State<HomePage> createState() => _HomePageState();
 }
 
@@ -37,11 +42,8 @@ class _HomePageState extends State<HomePage> {
       decoration: BoxDecoration(gradient: orangeGradient),
       child: Column(
         children: [
-          const _HeaderContent(),
-          _MainContainer(
-            isLoading: widget.isLoading,
-            plans: widget.plans,          
-          ),
+          _HeaderContent(onProfileTap: widget.onProfileTap),
+          _MainContainer(isLoading: widget.isLoading, plans: widget.plans, onNavigateToPlans: widget.onNavigateToPlans,),
         ],
       ),
     );
@@ -49,7 +51,8 @@ class _HomePageState extends State<HomePage> {
 }
 
 class _HeaderContent extends StatelessWidget {
-  const _HeaderContent();
+  final VoidCallback? onProfileTap;
+  const _HeaderContent({Key? key, this.onProfileTap}) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
@@ -60,7 +63,7 @@ class _HeaderContent extends StatelessWidget {
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
           const _GreetingText(),
-          const _NotificationAndAvatar(),
+          _NotificationAndAvatar(onProfileTap: onProfileTap),
         ],
       ),
     );
@@ -99,7 +102,8 @@ class _GreetingText extends StatelessWidget {
 }
 
 class _NotificationAndAvatar extends StatelessWidget {
-  const _NotificationAndAvatar();
+  final VoidCallback? onProfileTap;
+  const _NotificationAndAvatar({Key? key, this.onProfileTap}) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
@@ -114,9 +118,12 @@ class _NotificationAndAvatar extends StatelessWidget {
             size: 30,
           ),
         ),
-        CircleAvatar(
-          backgroundImage: const AssetImage('assets/images/sampleAvatar.jpg'),
-          radius: 22,
+        GestureDetector(
+          onTap: onProfileTap,
+          child: CircleAvatar(
+            backgroundImage: const AssetImage('assets/images/sampleAvatar.jpg'),
+            radius: 22,
+          ),
         ),
       ],
     );
@@ -126,11 +133,9 @@ class _NotificationAndAvatar extends StatelessWidget {
 class _MainContainer extends StatelessWidget {
   final bool isLoading;
   final List<Plan> plans;
+  final VoidCallback onNavigateToPlans;
 
-  const _MainContainer({
-    required this.isLoading,
-    required this.plans,
-  });
+  const _MainContainer({required this.isLoading, required this.plans, required this.onNavigateToPlans});
 
   @override
   Widget build(BuildContext context) {
@@ -148,11 +153,11 @@ class _MainContainer extends StatelessWidget {
         child: SingleChildScrollView(
           child: Column(
             children: [
-              _ComingUpSection(isLoading: isLoading, plans: plans),
-              
-              const SizedBox(height: 20,),
+              _ComingUpSection(isLoading: isLoading, plans: plans, onNavigateToPlans: onNavigateToPlans,),
 
-              const _SuggestedForYouSection(),
+              const SizedBox(height: 20),
+
+              _SuggestedForYouSection(onNavigateToPlans: onNavigateToPlans),
             ],
           ),
         ),
@@ -164,13 +169,9 @@ class _MainContainer extends StatelessWidget {
 class _ComingUpSection extends StatelessWidget {
   final List<Plan> plans;
   final bool isLoading;
+  final VoidCallback onNavigateToPlans;
 
-  const _ComingUpSection(
-    {
-      required this.plans, 
-      required this.isLoading,
-      }
-    );
+  const _ComingUpSection({required this.plans, required this.isLoading, required this.onNavigateToPlans});
 
   @override
   Widget build(BuildContext context) {
@@ -187,12 +188,8 @@ class _ComingUpSection extends StatelessWidget {
         ),
 
         const SizedBox(height: 12),
-        if (isLoading) 
-          Center(
-            child: CircularProgressIndicator(
-              color: orangeAccentColor,            
-            ),
-          )
+        if (isLoading)
+          Center(child: CircularProgressIndicator(color: orangeAccentColor))
         else if (plans.isEmpty)
           Center(
             child: Text(
@@ -209,7 +206,7 @@ class _ComingUpSection extends StatelessWidget {
             padding: EdgeInsets.all(0),
             shrinkWrap: true,
             physics: const NeverScrollableScrollPhysics(),
-            itemCount: plans.length,
+            itemCount: min(plans.length, 3),
             itemBuilder: (context, index) {
               final plan = plans[index];
               return Padding(
@@ -218,9 +215,9 @@ class _ComingUpSection extends StatelessWidget {
               );
             },
           ),
-        
-        const SizedBox(height: 16),
-      
+
+        const SizedBox(height: 5),
+
         Customfilledbutton(
           buttonHeight: 25,
           buttonWidth: double.infinity,
@@ -228,7 +225,7 @@ class _ComingUpSection extends StatelessWidget {
           buttonRadius: 20,
           textColor: lighttextColor,
           buttonLabel: 'See All',
-          pressAction: () {},
+          pressAction: onNavigateToPlans,
         ),
       ],
     );
@@ -236,18 +233,18 @@ class _ComingUpSection extends StatelessWidget {
 }
 
 class _SuggestedForYouSection extends StatelessWidget {
-  const _SuggestedForYouSection();
+  final VoidCallback onNavigateToPlans;
+  
+  const _SuggestedForYouSection({required this.onNavigateToPlans});
 
   @override
   Widget build(BuildContext context) {
     return Column(
       spacing: 8,
       mainAxisSize: MainAxisSize.max,
-      children: const [
-        _SectionHeader(),
-        _ActionButtons(),
-        _RecommendationButtons(),
-        _BottomText(),
+      children: [
+        const _SectionHeader(),
+        _ActionButtons(onNavigateToPlans: onNavigateToPlans),
       ],
     );
   }
@@ -273,76 +270,55 @@ class _SectionHeader extends StatelessWidget {
 }
 
 class _ActionButtons extends StatelessWidget {
-  const _ActionButtons();
+  final VoidCallback onNavigateToPlans;
+  
+  const _ActionButtons({required this.onNavigateToPlans});
 
   @override
   Widget build(BuildContext context) {
-    return Row(
-      mainAxisSize: MainAxisSize.max,
+    return Column(
       spacing: 8,
       children: [
-        CustomIconTextButton(
-          label: 'Add\nPeople',
-          iconSize: 30,
-          buttonIcon: Icons.group_add_outlined,
-        ),
-        CustomIconTextButton(
-          label: 'Add\nActivity',
-          iconSize: 30,
-          buttonIcon: Icons.edit_calendar_outlined,
-        ),
-      ],
-    );
-  }
-}
-
-class _RecommendationButtons extends StatelessWidget {
-  const _RecommendationButtons();
-
-  @override
-  Widget build(BuildContext context) {
-    return Row(
-      mainAxisSize: MainAxisSize.max,
-      spacing: 8,
-      children: [
-        CustomIconTextButton(
-          label: 'Recommend an Activity!',
-          iconSize: 25,
-          buttonIcon: Icons.lightbulb_outline_rounded,
-        ),
-        Material(
-          color: orangeAccentColor,
-          borderRadius: BorderRadius.circular(15),
-          child: InkWell(
-            onTap: () {},
-            borderRadius: BorderRadius.circular(15),
-            child: Container(
-              padding: const EdgeInsets.all(17),
-              child: const Icon(
-                Icons.refresh_rounded,
-                color: Colors.white,
-                size: 25,
-              ),
+        Row(
+          mainAxisSize: MainAxisSize.max,
+          spacing: 8,
+          children: [
+            CustomIconTextButton(
+              label: 'Add\nFriends',
+              iconSize: 30,
+              buttonIcon: Icons.person_add_alt_outlined,
+              pressAction: () {},
             ),
-          ),
+            CustomIconTextButton(
+              label: 'Add\nActivity',
+              iconSize: 30,
+              buttonIcon: Icons.edit_calendar_outlined,
+              pressAction: () {},
+            ),
+          ],
+        ),
+
+        //bottom row
+        Row(
+          mainAxisSize: MainAxisSize.max,
+          spacing: 8,
+          children: [
+            CustomIconTextButton(
+              label: 'Create\nGroup',
+              iconSize: 30,
+              buttonIcon: Icons.group_add_outlined,
+              pressAction: () {},
+            ),
+            CustomIconTextButton(
+              label: 'Check\nCalendar',
+              iconSize: 30,
+              buttonIcon: Icons.calendar_month_outlined,
+              pressAction: onNavigateToPlans,
+            ),
+          ],
         ),
       ],
     );
   }
 }
 
-class _BottomText extends StatelessWidget {
-  const _BottomText();
-
-  @override
-  Widget build(BuildContext context) {
-    return Text(
-      'or try the recomendations below!',
-      style: TextStyle(
-        color: darktextColor,
-        fontSize: 12,
-        fontWeight: FontWeight.w600,
-      ),
-    );
-  }
-}

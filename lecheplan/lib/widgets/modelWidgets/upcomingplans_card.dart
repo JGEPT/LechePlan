@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:lecheplan/providers/theme_provider.dart';
 import 'package:intl/intl.dart';
+import 'package:go_router/go_router.dart';
 
 //model inmports
 import 'package:lecheplan/models/plan_model.dart';
@@ -22,11 +23,6 @@ class UpcomingplansCard extends StatefulWidget {
 class _UpcomingplansCardState extends State<UpcomingplansCard> {
   bool _isPressed = false;
 
-  void goToActivityDetails() {
-    // TODO: Implement navigation to activity details
-    return;
-  }
-
   @override
   Widget build(BuildContext context) {
     final date = widget.plan.planDateTime;
@@ -47,7 +43,10 @@ class _UpcomingplansCardState extends State<UpcomingplansCard> {
         isActive ? const Offset(0, 4) : const Offset(0, 2);
 
     return GestureDetector(
-      onTap: goToActivityDetails,
+      onTap: () {
+        //navigate to ActivityDetailsPage and bring da  plan data
+        context.push('/activitydetailspage', extra: widget.plan);
+      },
       onTapDown: (_) => setState(() => _isPressed = true),
       onTapUp: (_) => setState(() => _isPressed = false),
       onTapCancel: () => setState(() => _isPressed = false),
@@ -73,6 +72,7 @@ class _UpcomingplansCardState extends State<UpcomingplansCard> {
               ),
             ],
           ),
+
           child: Padding(
             padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
             child: Row(
@@ -129,7 +129,7 @@ class _UpcomingplansCardState extends State<UpcomingplansCard> {
                 ),
                 const SizedBox(width: 10),
                 _AvatarsDisplay(
-                  avatarAssets: widget.plan.avatarAssets,
+                  profilePhotoUrls: widget.plan.profilePhotoUrls,
                   participantCount: widget.plan.participants.length,
                 ),
               ],
@@ -168,11 +168,11 @@ class _UpcomingplansCardState extends State<UpcomingplansCard> {
 }
 
 class _AvatarsDisplay extends StatelessWidget {
-  final List<String> avatarAssets;
+  final List<String> profilePhotoUrls;
   final int participantCount;
 
   const _AvatarsDisplay({
-    required this.avatarAssets,
+    required this.profilePhotoUrls,
     required this.participantCount,
   });
 
@@ -184,11 +184,16 @@ class _AvatarsDisplay extends StatelessWidget {
 
     List<Widget> avatarWidgets = [];
     for (int i = 0; i < showCount; i++) {
+      final url = (i < profilePhotoUrls.length) ? profilePhotoUrls[i] : null;
       avatarWidgets.add(
         Positioned(
           left: i * overlap,
           child: CircleAvatar(
-            backgroundImage: AssetImage(avatarAssets[i]),
+            backgroundImage:
+                (url != null && url.isNotEmpty)
+                    ? NetworkImage(url)
+                    : const AssetImage('assets/images/sampleAvatar.jpg')
+                        as ImageProvider,
             radius: 18,
           ),
         ),

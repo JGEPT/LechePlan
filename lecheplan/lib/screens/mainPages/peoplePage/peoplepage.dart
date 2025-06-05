@@ -2,9 +2,14 @@ import 'package:flutter/material.dart';
 import 'package:lecheplan/providers/theme_provider.dart';
 import 'package:go_router/go_router.dart';
 import 'package:lecheplan/services/people_services.dart';
+import 'package:lecheplan/models/friendlist.dart';
+import 'package:lecheplan/models/group_model.dart';
 
 class PeoplePage extends StatefulWidget {
-  const PeoplePage({super.key});
+  final VoidCallback? onProfileTap;
+  final List<Group> groups;
+  const PeoplePage({Key? key, this.onProfileTap, this.groups = const []})
+    : super(key: key);
 
   @override
   State<PeoplePage> createState() => _PeoplePageState();
@@ -73,7 +78,6 @@ class _PeoplePageState extends State<PeoplePage> {
       _searchQuery = query.toLowerCase();
     });
   }
-
   // Helper to get the friend's username from a friend entry
   String _getFriendUsername(Map<String, dynamic> friendData) {
     if (friendData['member1_id'] == _currentTestUserId) {
@@ -84,7 +88,6 @@ class _PeoplePageState extends State<PeoplePage> {
       return 'Unknown Friend'; 
     }
   }
-
   void _showAddCreateDialog(BuildContext context) {
     showDialog(
       context: context,
@@ -104,32 +107,32 @@ class _PeoplePageState extends State<PeoplePage> {
                   child: Column(
                     mainAxisSize: MainAxisSize.min,
                     children: [
-                      // Toggles 
+                      // Toggles
                       Container(
                         height: 35,
-                        decoration: BoxDecoration(              
+                        decoration: BoxDecoration(
                           color: greyAccentColor,
-                          borderRadius: BorderRadius.circular(10)            
+                          borderRadius: BorderRadius.circular(10),
                         ),
-                        child: Material( 
+                        child: Material(
                           color: Colors.transparent,
                           borderRadius: BorderRadius.circular(10),
                           clipBehavior: Clip.antiAlias,
-                          child: TabBar(          
+                          child: TabBar(
                             //labels
                             labelStyle: TextStyle(
                               fontFamily: 'Quicksand',
                               fontWeight: FontWeight.w700,
-                              fontSize: 12
-                            ),                
+                              fontSize: 12,
+                            ),
                             unselectedLabelColor: darktextColor,
                             labelColor: darktextColor,
-                          
+
                             //indicator
                             indicator: BoxDecoration(
                               color: Colors.white,
                               borderRadius: BorderRadius.circular(8),
-                              boxShadow: [defaultBoxShadow]
+                              boxShadow: [defaultBoxShadow],
                             ),
                             indicatorSize: TabBarIndicatorSize.tab,
                             indicatorPadding: const EdgeInsets.all(4),
@@ -170,25 +173,33 @@ class _PeoplePageState extends State<PeoplePage> {
                                     itemBuilder: (context, index) {
                                       final person = dialogFilteredPeople[index];
                                       return Container(
-                                        margin: const EdgeInsets.only(bottom: 4),
+                                        margin: const EdgeInsets.only(
+                                          bottom: 4,
+                                        ),
                                         decoration: BoxDecoration(
                                           border: Border.all(
                                             color: darktextColor.withAlpha(50),
                                             width: 1,
                                           ),
-                                          borderRadius: BorderRadius.circular(10),
+                                          borderRadius: BorderRadius.circular(
+                                            10,
+                                          ),
                                         ),
                                         child: ListTile(
-                                          contentPadding: const EdgeInsets.symmetric(
-                                            horizontal: 8,
-                                            vertical: 2,
-                                          ),
+                                          contentPadding:
+                                              const EdgeInsets.symmetric(
+                                                horizontal: 8,
+                                                vertical: 2,
+                                              ),
                                           leading: const CircleAvatar(
-                                            backgroundImage: AssetImage('assets/images/sampleAvatar.jpg'),
+                                            backgroundImage: AssetImage(
+                                              'assets/images/sampleAvatar.jpg',
+                                            ),
                                             radius: 18,
                                           ),
                                           title: Column(
-                                            crossAxisAlignment: CrossAxisAlignment.start,
+                                            crossAxisAlignment:
+                                                CrossAxisAlignment.start,
                                             mainAxisSize: MainAxisSize.min,
                                             children: [
                                               Text(
@@ -197,6 +208,16 @@ class _PeoplePageState extends State<PeoplePage> {
                                                   fontFamily: 'Quicksand',
                                                   fontWeight: FontWeight.w600,
                                                   fontSize: 14,
+                                                ),
+                                              ),
+                                              const SizedBox(height: 2),
+                                              Text(
+                                                '${person['mutualFriends']} mutual friends',
+                                                style: TextStyle(
+                                                  fontFamily: 'Quicksand',
+                                                  fontSize: 11,
+                                                  color: darktextColor
+                                                      .withAlpha(150),
                                                 ),
                                               ),
                                             ],
@@ -251,10 +272,11 @@ class _PeoplePageState extends State<PeoplePage> {
                                       ),
                                       border: InputBorder.none,
                                       isDense: true,
-                                      contentPadding: const EdgeInsets.symmetric(
-                                        horizontal: 12,
-                                        vertical: 12,
-                                      ),
+                                      contentPadding:
+                                          const EdgeInsets.symmetric(
+                                            horizontal: 12,
+                                            vertical: 12,
+                                          ),
                                       alignLabelWithHint: true,
                                     ),
                                   ),
@@ -278,25 +300,33 @@ class _PeoplePageState extends State<PeoplePage> {
                                     itemBuilder: (context, index) {
                                       final person = dialogFilteredPeople[index];
                                       return Container(
-                                        margin: const EdgeInsets.only(bottom: 4),
+                                        margin: const EdgeInsets.only(
+                                          bottom: 4,
+                                        ),
                                         decoration: BoxDecoration(
                                           border: Border.all(
                                             color: darktextColor.withAlpha(50),
                                             width: 1,
                                           ),
-                                          borderRadius: BorderRadius.circular(10),
+                                          borderRadius: BorderRadius.circular(
+                                            10,
+                                          ),
                                         ),
                                         child: ListTile(
-                                          contentPadding: const EdgeInsets.symmetric(
-                                            horizontal: 8,
-                                            vertical: 2,
-                                          ),
+                                          contentPadding:
+                                              const EdgeInsets.symmetric(
+                                                horizontal: 8,
+                                                vertical: 2,
+                                              ),
                                           leading: const CircleAvatar(
-                                            backgroundImage: AssetImage('assets/images/sampleAvatar.jpg'),
+                                            backgroundImage: AssetImage(
+                                              'assets/images/sampleAvatar.jpg',
+                                            ),
                                             radius: 18,
                                           ),
                                           title: Column(
-                                            crossAxisAlignment: CrossAxisAlignment.start,
+                                            crossAxisAlignment:
+                                                CrossAxisAlignment.start,
                                             mainAxisSize: MainAxisSize.min,
                                             children: [
                                               Text(
@@ -305,6 +335,16 @@ class _PeoplePageState extends State<PeoplePage> {
                                                   fontFamily: 'Quicksand',
                                                   fontWeight: FontWeight.w600,
                                                   fontSize: 14,
+                                                ),
+                                              ),
+                                              const SizedBox(height: 2),
+                                              Text(
+                                                '${person['mutualFriends']} mutual friends',
+                                                style: TextStyle(
+                                                  fontFamily: 'Quicksand',
+                                                  fontSize: 11,
+                                                  color: darktextColor
+                                                      .withAlpha(150),
                                                 ),
                                               ),
                                             ],
@@ -355,12 +395,17 @@ class _PeoplePageState extends State<PeoplePage> {
 
   List<Map<String, dynamic>> get filteredGroups {
     if (_searchQuery.isEmpty) {
-      return _groupsData;
+      return widget.groups;
     }
-    return _groupsData.where((group) => 
-      group['groupname'].toLowerCase().contains(_searchQuery) ||
-      (group['members'] != null && (group['members'] as List).any((member) => member.toString().toLowerCase().contains(_searchQuery)))
-    ).toList();
+    return widget.groups
+        .where(
+          (group) =>
+              group.groupName.toLowerCase().contains(_searchQuery) ||
+              group.members.any(
+                (member) => member.toLowerCase().contains(_searchQuery),
+              ),
+        )
+        .toList();
   }
 
   @override
@@ -395,28 +440,43 @@ class _PeoplePageState extends State<PeoplePage> {
               shape: BoxShape.circle,
               boxShadow: [defaultBoxShadow],
             ),
-            child: IconButton(
-              padding: EdgeInsets.zero,
-              icon: const Icon(
-                Icons.group_add_outlined,
-                color: Colors.white,
-                size: 30,
+          ),
+          Positioned(
+            bottom: 95,
+            right: 15,
+            child: Container(
+              height: 55,
+              width: 55,
+              decoration: BoxDecoration(
+                color: orangeAccentColor,
+                shape: BoxShape.circle,
+                boxShadow: [defaultBoxShadow],
               ),
-              onPressed: () => _showAddCreateDialog(context),
+              child: IconButton(
+                padding: EdgeInsets.zero,
+                icon: const Icon(
+                  Icons.group_add_outlined,
+                  color: Colors.white,
+                  size: 30,
+                ),
+                onPressed: () => _showAddCreateDialog(context),
+              ),
             ),
           ),
-        ),
-      ],
+        ],
+      ),
     );
   }
 }
 
 class _HeaderContent extends StatelessWidget {
   final Function(String) onSearchChanged;
-
+  final VoidCallback? onProfileTap;
   const _HeaderContent({
+    Key? key,
     required this.onSearchChanged,
-  });
+    this.onProfileTap,
+  }) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
@@ -426,7 +486,7 @@ class _HeaderContent extends StatelessWidget {
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
           _SearchBar(onSearchChanged: onSearchChanged),
-          const _NotificationAndAvatar(),
+          _NotificationAndAvatar(onProfileTap: onProfileTap),
         ],
       ),
     );
@@ -436,9 +496,7 @@ class _HeaderContent extends StatelessWidget {
 class _SearchBar extends StatefulWidget {
   final Function(String) onSearchChanged;
 
-  const _SearchBar({
-    required this.onSearchChanged,
-  });
+  const _SearchBar({required this.onSearchChanged});
 
   @override
   State<_SearchBar> createState() => _SearchBarState();
@@ -487,7 +545,7 @@ class _SearchBarState extends State<_SearchBar> {
           style: TextStyle(
             color: darktextColor,
             fontFamily: 'Quicksand',
-            fontSize: 16,
+            fontSize: 13,
             fontWeight: FontWeight.w600,
           ),
           decoration: InputDecoration(
@@ -495,7 +553,7 @@ class _SearchBarState extends State<_SearchBar> {
             hintStyle: TextStyle(
               color: darktextColor.withAlpha(120),
               fontFamily: 'Quicksand',
-              fontSize: 16,
+              fontSize: 13,
               fontWeight: FontWeight.w600,
             ),
             prefixIcon: Icon(
@@ -503,16 +561,17 @@ class _SearchBarState extends State<_SearchBar> {
               color: darktextColor.withAlpha(120),
               size: 22,
             ),
-            suffixIcon: _searchController.text.isNotEmpty
-                ? IconButton(
-                    icon: Icon(
-                      Icons.clear_rounded,
-                      color: darktextColor.withAlpha(120),
-                      size: 20,
-                    ),
-                    onPressed: _clearSearch,
-                  )
-                : null,
+            suffixIcon:
+                _searchController.text.isNotEmpty
+                    ? IconButton(
+                      icon: Icon(
+                        Icons.clear_rounded,
+                        color: darktextColor.withAlpha(120),
+                        size: 20,
+                      ),
+                      onPressed: _clearSearch,
+                    )
+                    : null,
             border: InputBorder.none,
             contentPadding: const EdgeInsets.symmetric(
               horizontal: 16,
@@ -527,7 +586,8 @@ class _SearchBarState extends State<_SearchBar> {
 }
 
 class _NotificationAndAvatar extends StatelessWidget {
-  const _NotificationAndAvatar();
+  final VoidCallback? onProfileTap;
+  const _NotificationAndAvatar({Key? key, this.onProfileTap}) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
@@ -542,9 +602,12 @@ class _NotificationAndAvatar extends StatelessWidget {
             size: 30,
           ),
         ),
-        CircleAvatar(
-          backgroundImage: const AssetImage('assets/images/sampleAvatar.jpg'),
-          radius: 22,
+        GestureDetector(
+          onTap: onProfileTap,
+          child: CircleAvatar(
+            backgroundImage: const AssetImage('assets/images/sampleAvatar.jpg'),
+            radius: 22,
+          ),
         ),
       ],
     );
@@ -559,40 +622,37 @@ class _PeopleBar extends StatelessWidget {
     return Container(
       margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
       height: 40,
-      decoration: BoxDecoration(              
+      decoration: BoxDecoration(
         color: greyAccentColor,
-        borderRadius: BorderRadius.circular(10)            
+        borderRadius: BorderRadius.circular(10),
       ),
-      child: Material( 
+      child: Material(
         color: Colors.transparent,
         borderRadius: BorderRadius.circular(10),
         clipBehavior: Clip.antiAlias,
 
-        child: TabBar(          
+        child: TabBar(
           //labels
           labelStyle: TextStyle(
             fontFamily: 'Quicksand',
             fontWeight: FontWeight.w700,
-            fontSize: 13
-          ),                
+            fontSize: 13,
+          ),
           unselectedLabelColor: darktextColor,
           labelColor: darktextColor,
-        
+
           //indicator
           indicator: BoxDecoration(
             color: Colors.white,
             borderRadius: BorderRadius.circular(8),
-            boxShadow: [defaultBoxShadow]
+            boxShadow: [defaultBoxShadow],
           ),
           indicatorSize: TabBarIndicatorSize.tab,
           indicatorPadding: const EdgeInsets.all(5),
           indicatorAnimation: TabIndicatorAnimation.elastic,
           dividerHeight: 0,
           //content
-          tabs: [
-            Tab(text: 'Friend'),
-            Tab(text: 'Group'),
-          ],
+          tabs: [Tab(text: 'Friends'), Tab(text: 'Groups')],
         ),
       ),
     );
@@ -661,35 +721,37 @@ class _MainContent extends StatelessWidget {
         ),
         //group tab
         Container(
-          padding: const EdgeInsets.symmetric(horizontal: 20),
-          child: filteredGroups.isEmpty
-              ? const Center(
-                  child: Text(
-                    'No groups found',
-                    style: TextStyle(
-                      fontFamily: 'Quicksand',
-                      fontSize: 16,
-                      color: Colors.grey,
-                    ),
-                  ),
-                )
-              : ListView.builder(
-                  padding: const EdgeInsets.only(bottom: 80),
-                  itemCount: filteredGroups.length,
-                  itemBuilder: (context, index) {
-                    final group = filteredGroups[index];
-                    return _GroupCard(
-                      groupID: group['group_id'] ?? '', 
-                      groupName: group['groupname'] ?? 'Unknown Group', 
-                      activity: group['activity']?.toString() ?? 'No activity', 
-                      profile: 'assets/images/sampleAvatar.jpg', // Placeholder
-                      members: (group['members'] as List?)?.map((e) => e.toString()).toList() ?? [], 
-                      onTap: () {
-                        // TO DO 
+            padding: const EdgeInsets.symmetric(horizontal: 20),
+            child:
+                filteredGroups.isEmpty
+                    ? const Center(
+                      child: Text(
+                        'No groups found',
+                        style: TextStyle(
+                          fontFamily: 'Quicksand',
+                          fontSize: 16,
+                          color: Colors.grey,
+                        ),
+                      ),
+                    )
+                    : ListView.builder(
+                      padding: const EdgeInsets.only(bottom: 80),
+                      itemCount: filteredGroups.length,
+                      itemBuilder: (context, index) {
+                        final group = filteredGroups[index];
+                        return _GroupCard(
+                          groupID: group.groupID,
+                          groupName: group.groupName,
+                          groupProfile: group.groupProfile,
+                          memberCount: group.memberCount,
+                          activity: group.activity,
+                          members: group.members,
+                          onTap: () {
+                            // View group details
+                          },
+                        );
                       },
-                    );
-                  },
-                ),
+                    ),
         ),
       ],
     );
@@ -719,22 +781,18 @@ class _FriendCard extends StatelessWidget {
         : 'No activity';
 
     return Card(
-      margin: const EdgeInsets.only(bottom: 12),
-      elevation: 2,
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(12),
-      ),
+      margin: const EdgeInsets.only(bottom: 5),
+      color: Colors.white,
+      elevation: 0,
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12), side: BorderSide(color: greyAccentColor, width: 2)),
       child: ListTile(
         contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-        leading: CircleAvatar(
-          backgroundImage: AssetImage(profile),
-          radius: 25,
-        ),
+        leading: CircleAvatar(backgroundImage: AssetImage(profile), radius: 25),
         title: Text(
           name,
           style: const TextStyle(
             fontSize: 16,
-            fontWeight: FontWeight.bold,
+            fontWeight: FontWeight.w700,
             fontFamily: 'Quicksand',
           ),
         ),
@@ -747,7 +805,7 @@ class _FriendCard extends StatelessWidget {
         trailing: Icon(
           Icons.arrow_forward_ios_rounded,
           size: 16,
-          color: Colors.grey[400],
+          color: darktextColor.withAlpha(100),
         ),
         onTap: onTap,
       ),
@@ -758,16 +816,18 @@ class _FriendCard extends StatelessWidget {
 class _GroupCard extends StatelessWidget {
   final String groupID;
   final String groupName;
+  final String groupProfile;
+  final int memberCount;
   final String activity;
-  final String profile;
   final List<String> members;
   final VoidCallback? onTap;
 
   const _GroupCard({
     required this.groupID,
     required this.groupName,
+    required this.groupProfile,
+    required this.memberCount,
     required this.activity,
-    required this.profile,
     required this.members,
     required this.onTap,
   });
@@ -775,15 +835,18 @@ class _GroupCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Card(
-      margin: const EdgeInsets.only(bottom: 12),
-      elevation: 2,
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(12),
-      ),
+      margin: const EdgeInsets.only(bottom: 5),
+      color: Colors.white,
+      elevation: 0,
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12), side: BorderSide(color: greyAccentColor, width: 2)),
       child: ListTile(
         contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
         leading: CircleAvatar(
-          backgroundImage: AssetImage(profile),
+          backgroundImage:
+              groupProfile.isNotEmpty
+                  ? NetworkImage(groupProfile)
+                  : const AssetImage('assets/images/sampleAvatar.jpg')
+                      as ImageProvider,
           radius: 25,
         ),
         title: Text(
@@ -797,9 +860,8 @@ class _GroupCard extends StatelessWidget {
         subtitle: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-
             Text(
-              '${members.length} members: ${members.join(", ")}',
+              '${memberCount} members: ${members.join(", ")}',
               style: TextStyle(
                 fontFamily: 'Quicksand',
                 fontSize: 10,
@@ -809,12 +871,7 @@ class _GroupCard extends StatelessWidget {
               overflow: TextOverflow.ellipsis,
             ),
             const SizedBox(height: 4),
-            Text(
-              activity,
-              style: const TextStyle(
-                fontFamily: 'Quicksand',
-              ),
-            ),
+            Text(activity, style: const TextStyle(fontFamily: 'Quicksand')),
           ],
         ),
         trailing: Icon(
@@ -880,16 +937,17 @@ class _AddFriendSearchState extends State<_AddFriendSearch> {
             color: darktextColor.withAlpha(120),
             size: 18,
           ),
-          suffixIcon: _searchController.text.isNotEmpty
-              ? IconButton(
-                  icon: Icon(
-                    Icons.clear_rounded,
-                    color: darktextColor.withAlpha(120),
-                    size: 20,
-                  ),
-                  onPressed: _clearSearch,
-                )
-              : null,
+          suffixIcon:
+              _searchController.text.isNotEmpty
+                  ? IconButton(
+                    icon: Icon(
+                      Icons.clear_rounded,
+                      color: darktextColor.withAlpha(120),
+                      size: 20,
+                    ),
+                    onPressed: _clearSearch,
+                  )
+                  : null,
           border: InputBorder.none,
           isDense: true,
           contentPadding: const EdgeInsets.symmetric(
@@ -906,9 +964,7 @@ class _AddFriendSearchState extends State<_AddFriendSearch> {
 class _AddFriendSearch extends StatefulWidget {
   final Function(String) onSearchChanged;
 
-  const _AddFriendSearch({
-    required this.onSearchChanged,
-  });
+  const _AddFriendSearch({required this.onSearchChanged});
 
   @override
   State<_AddFriendSearch> createState() => _AddFriendSearchState();
@@ -966,16 +1022,17 @@ class _CreateGroupSearchState extends State<_CreateGroupSearch> {
             color: darktextColor.withAlpha(120),
             size: 18,
           ),
-          suffixIcon: _searchController.text.isNotEmpty
-              ? IconButton(
-                  icon: Icon(
-                    Icons.clear_rounded,
-                    color: darktextColor.withAlpha(120),
-                    size: 20,
-                  ),
-                  onPressed: _clearSearch,
-                )
-              : null,
+          suffixIcon:
+              _searchController.text.isNotEmpty
+                  ? IconButton(
+                    icon: Icon(
+                      Icons.clear_rounded,
+                      color: darktextColor.withAlpha(120),
+                      size: 20,
+                    ),
+                    onPressed: _clearSearch,
+                  )
+                  : null,
           border: InputBorder.none,
           isDense: true,
           contentPadding: const EdgeInsets.symmetric(
@@ -992,9 +1049,7 @@ class _CreateGroupSearchState extends State<_CreateGroupSearch> {
 class _CreateGroupSearch extends StatefulWidget {
   final Function(String) onSearchChanged;
 
-  const _CreateGroupSearch({
-    required this.onSearchChanged,
-  });
+  const _CreateGroupSearch({required this.onSearchChanged});
 
   @override
   State<_CreateGroupSearch> createState() => _CreateGroupSearchState();

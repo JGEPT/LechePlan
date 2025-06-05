@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:lecheplan/providers/theme_provider.dart';
 import 'package:go_router/go_router.dart';
+import 'package:lecheplan/models/notification_model.dart' as NotificationModel;
+import 'package:lecheplan/services/notifs_services.dart';
 
 class NotificationsPage extends StatefulWidget {
   const NotificationsPage({super.key});
@@ -10,22 +12,107 @@ class NotificationsPage extends StatefulWidget {
 }
 
 class _NotificationsPageState extends State<NotificationsPage> {
+  List<NotificationModel.Notification> allNotifications = [];
+  List<NotificationModel.Notification> unreadNotifications = [];
+  bool isLoading = true;
+
+  @override
+  void initState() {
+    super.initState();
+    _fetchNotifications();
+  }
+
+  Future<void> _fetchNotifications() async {
+    try {
+      setState(() {
+        isLoading = true;
+      });
+
+      final response = await fetchAllNotifications();
+      final notifications = response.map((json) => NotificationModel.Notification.fromJson(json)).toList();
+      
+      setState(() {
+        allNotifications = notifications;
+        // For now, we'll consider all notifications as unread since there's no read status in the model
+        // You can modify this logic later when you add read/unread functionality
+        unreadNotifications = notifications;
+        isLoading = false;
+      });
+    } catch (error) {
+      setState(() {
+        isLoading = false;
+      });
+      // Handle error - you might want to show a snackbar or error message
+      print('Error fetching notifications: $error');
+    }
+  }
+
+  // Helper method to filter notifications by date
+  List<NotificationModel.Notification> _getTodayNotifications(List<NotificationModel.Notification> notifications) {
+    final today = DateTime.now();
+    final todayLocal = DateTime(today.year, today.month, today.day);
+    
+    return notifications.where((notification) {
+      // Convert notification date to local time first
+      final notificationDate = notification.createdAt.toLocal();
+      final notificationLocal = DateTime(notificationDate.year, notificationDate.month, notificationDate.day);
+      
+      return notificationLocal.isAtSameMomentAs(todayLocal);
+    }).toList();
+  }
+
+  List<NotificationModel.Notification> _getEarlierNotifications(List<NotificationModel.Notification> notifications) {
+    final today = DateTime.now();
+    final todayLocal = DateTime(today.year, today.month, today.day);
+    
+    return notifications.where((notification) {
+      //convert notification date to local time first
+      final notificationDate = notification.createdAt.toLocal();
+      final notificationLocal = DateTime(notificationDate.year, notificationDate.month, notificationDate.day);
+      
+      return notificationLocal.isBefore(todayLocal);
+    }).toList();
+  }
+
   @override
   Widget build(BuildContext context) {
     return DefaultTabController(
       length: 2,
-      child: _NotifsAppBar(), //the apps bar will hold everything already -- tabs will hold the indices
+      child: _NotifsAppBar(
+        allNotifications: allNotifications,
+        unreadNotifications: unreadNotifications,
+        isLoading: isLoading,
+        onRefresh: _fetchNotifications,
+        getTodayNotifications: _getTodayNotifications,
+        getEarlierNotifications: _getEarlierNotifications,
+      ),
     );
   }
 }
 
 class _NotifsAppBar extends StatelessWidget {
-  const _NotifsAppBar();
+  final List<NotificationModel.Notification> allNotifications;
+  final List<NotificationModel.Notification> unreadNotifications;
+  final bool isLoading;
+  final Future<void> Function() onRefresh;
+  final Function(List<NotificationModel.Notification>) getTodayNotifications;
+  final Function(List<NotificationModel.Notification>) getEarlierNotifications;
+
+  const _NotifsAppBar({
+    super.key,
+    required this.allNotifications,
+    required this.unreadNotifications,
+    required this.isLoading,
+    required this.onRefresh,
+    required this.getTodayNotifications,
+    required this.getEarlierNotifications,
+  });
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
+        titleSpacing: 1,
         toolbarHeight: 70,
         leading: BackButton(onPressed: () {context.pop();},), //will go back to prev if used context.push
         backgroundColor: pinkishBackgroundColor,
@@ -49,7 +136,7 @@ class _NotifsAppBar extends StatelessWidget {
         ],
         
         bottom: PreferredSize(
-          preferredSize: const Size.fromHeight(40),
+          preferredSize: const Size.fromHeight(50),
           //use contianer to determine the look of the actual tab bar
           child: Container(
             margin: const EdgeInsets.only(left: 16, right: 16, top: 0, bottom: 8),
@@ -100,21 +187,54 @@ class _NotifsAppBar extends StatelessWidget {
         padding: const EdgeInsets.all(20),
         child: TabBarView(
           children: [
-            //currently temporary, still need to make a list of notifications possible      
-            //
-            //coulumn will hold both today and earlier notifications     
-            ListView(               
-              children: [
-                //today notifications
-                TodayNotificationsList(),
-                
-                const SizedBox(height: 10,),
-              
-                //earlier notifications 
-                EarlierNotificationsList(),
-              ],
-            ),
-            Icon(Icons.mark_unread_chat_alt),
+            //All notifications tab
+            if (isLoading)
+              const Center(child: CircularProgressIndicator())
+            else
+              RefreshIndicator(
+                onRefresh: onRefresh,
+                child: ListView(               
+                  children: [
+                    //today notifications
+                    NotificationsList(
+                      title: 'Today', 
+                      notifications: getTodayNotifications(allNotifications),
+                    ),
+                    
+                    const SizedBox(height: 10,),
+                  
+                    //earlier notifications 
+                    NotificationsList(
+                      title: 'Earlier', 
+                      notifications: getEarlierNotifications(allNotifications),
+                    ),
+                  ],
+                ),
+              ),
+            //Unread notifications tab
+            if (isLoading)
+              const Center(child: CircularProgressIndicator())
+            else
+              RefreshIndicator(
+                onRefresh: onRefresh,
+                child: ListView(               
+                  children: [
+                    //today notifications
+                    NotificationsList(
+                      title: 'Today', 
+                      notifications: getTodayNotifications(unreadNotifications),
+                    ),
+                    
+                    const SizedBox(height: 10,),
+                  
+                    //earlier notifications 
+                    NotificationsList(
+                      title: 'Earlier', 
+                      notifications: getEarlierNotifications(unreadNotifications),
+                    ),
+                  ],
+                ),
+              ),
           ],
         ),
       ),
@@ -122,10 +242,14 @@ class _NotifsAppBar extends StatelessWidget {
   }
 }
 
-//make all and unread versions? I guess we'll see how to impement this 
-class TodayNotificationsList extends StatelessWidget {
-  const TodayNotificationsList({
+class NotificationsList extends StatelessWidget {
+  final String title;
+  final List<NotificationModel.Notification> notifications;
+  
+  const NotificationsList({
     super.key,
+    required this.title,
+    required this.notifications,
   });
 
   @override
@@ -136,7 +260,7 @@ class TodayNotificationsList extends StatelessWidget {
         Align(
           alignment: Alignment.topLeft,
           child: Text(
-            'Today',
+            title,
             style: TextStyle(
               color: darktextColor,
               fontWeight: FontWeight.w600,
@@ -147,52 +271,128 @@ class TodayNotificationsList extends StatelessWidget {
 
         const SizedBox(height: 10,),
 
-        ...List.generate(2, (index) {
-          return Container(
-            color: orangeAccentColor.withAlpha(50),
-            height: 50,
-            width: double.infinity,
-          );
-        })
+        notifications.isEmpty 
+          ? Container(
+              padding: const EdgeInsets.all(20),
+              child: Center(
+                child: Text(
+                  'No notifications',
+                  style: TextStyle(
+                    color: darktextColor.withAlpha(150),
+                    fontSize: 14,
+                  ),
+                ),
+              ),
+            )
+          : ListView.builder(
+              shrinkWrap: true,
+              physics: const NeverScrollableScrollPhysics(),
+              itemCount: notifications.length,
+              itemBuilder: (context, index) {
+                final notification = notifications[index];
+                return Container(
+                  margin: const EdgeInsets.only(bottom: 10),
+                  padding: const EdgeInsets.all(16),
+                  decoration: BoxDecoration(
+                    color: Colors.white,
+                    borderRadius: BorderRadius.circular(12),
+                    boxShadow: [defaultBoxShadow],
+                  ),
+                  child: Row(
+                    children: [
+                      //notification icon
+                      Container(
+                        width: 40,
+                        height: 40,
+                        decoration: BoxDecoration(
+                          color: pinkishBackgroundColor,
+                          borderRadius: BorderRadius.circular(20),
+                        ),
+                        child: Icon(
+                          _getIconFromType(notification.iconType),
+                          color: darktextColor,
+                          size: 20,
+                        ),
+                      ),
+                      
+                      const SizedBox(width: 16),
+                      
+                      //notif content
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              notification.message,
+                              style: TextStyle(
+                                color: darktextColor,
+                                fontWeight: FontWeight.w600,
+                                fontSize: 14,
+                              ),
+                            ),
+                            const SizedBox(height: 4),
+                            Text(
+                              _formatTimestamp(notification.createdAt),
+                              style: TextStyle(
+                                color: darktextColor.withOpacity(0.6),
+                                fontSize: 12,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                      
+                      //action button (optional)
+                      Icon(
+                        Icons.chevron_right,
+                        color: darktextColor.withAlpha(80),
+                      ),
+                    ],
+                  ),
+                );
+              },
+            )
       ],
     );
   }
-}
 
-//please refactor this to be one widget just for today and earlier to be the same :P
-class EarlierNotificationsList extends StatelessWidget {
-  const EarlierNotificationsList({
-    super.key,
-  });
+  // helper method to get Material icon from icon type string
+  IconData _getIconFromType(String iconType) {
+    switch (iconType) {
+      case 'mail':
+        return Icons.mail_outline;
+      case 'cancel':
+        return Icons.cancel_outlined;
+      case 'alarm':
+        return Icons.alarm;
+      case 'person_add':
+        return Icons.person_add_outlined;
+      case 'group_add':
+        return Icons.group_add_outlined;
+      case 'person':
+        return Icons.person_outline;
+      case 'group':
+        return Icons.group_outlined;
+      default:
+        return Icons.notifications_outlined;
+    }
+  }
 
-  @override
-  Widget build(BuildContext context) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [        
-        Align(
-          alignment: Alignment.topLeft,
-          child: Text(
-            'Earlier',
-            style: TextStyle(
-              color: darktextColor,
-              fontWeight: FontWeight.w600,
-              fontSize: 15
-            ),
-          )
-        ),
+  //helper method to format timestamp
+  String _formatTimestamp(DateTime timestamp) {
+    final now = DateTime.now();
+    final difference = now.difference(timestamp);
 
-        const SizedBox(height: 10,),
-
-        ...List.generate(20, (index) {
-          return Container(
-            color: orangeAccentColor.withAlpha(50),
-            height: 50,
-            width: double.infinity,
-          );
-        })
-      ],
-    );
+    if (difference.inMinutes < 1) {
+      return 'Just now';
+    } else if (difference.inHours < 1) {
+      return '${difference.inMinutes}m ago';
+    } else if (difference.inDays < 1) {
+      return '${difference.inHours}h ago';
+    } else if (difference.inDays < 7) {
+      return '${difference.inDays}d ago';
+    } else {
+      return '${timestamp.day}/${timestamp.month}/${timestamp.year}';
+    }
   }
 }
-
