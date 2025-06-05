@@ -49,7 +49,7 @@ class _HomePageState extends State<HomePage> {
       if (currentUser == null) return;
 
       final profileResult = await ProfileService.getUserProfile(currentUser.id);
-      
+
       if (profileResult['success'] && mounted) {
         final profile = profileResult['profile'];
         setState(() {
@@ -67,18 +67,18 @@ class _HomePageState extends State<HomePage> {
       backgroundColor: orangeAccentColor,
       body: Column(
         children: [
-          _Header(
-            onProfileTap: widget.onProfileTap,
-            username: _username,
-          ),
-          Expanded(            
+          _Header(onProfileTap: widget.onProfileTap, username: _username),
+          Expanded(
             child: Container(
               padding: EdgeInsets.all(20),
               decoration: BoxDecoration(
                 color: pinkishBackgroundColor,
-                borderRadius: BorderRadius.only(topLeft: Radius.circular(15), topRight: Radius.circular(15))
+                borderRadius: BorderRadius.only(
+                  topLeft: Radius.circular(15),
+                  topRight: Radius.circular(15),
+                ),
               ),
-              child: SingleChildScrollView(              
+              child: SingleChildScrollView(
                 padding: const EdgeInsets.only(bottom: 20),
                 child: Column(
                   children: [
@@ -104,11 +104,8 @@ class _Header extends StatelessWidget {
   final VoidCallback? onProfileTap;
   final String username;
 
-  const _Header({
-    Key? key,
-    this.onProfileTap,
-    required this.username,
-  }) : super(key: key);
+  const _Header({Key? key, this.onProfileTap, required this.username})
+    : super(key: key);
 
   @override
   Widget build(BuildContext context) {
@@ -176,10 +173,7 @@ class _NotificationAndAvatar extends StatelessWidget {
             size: 30,
           ),
         ),
-        UserAvatar(
-          radius: 22,
-          onTap: onProfileTap,
-        ),
+        UserAvatar(radius: 22, onTap: onProfileTap),
       ],
     );
   }
@@ -190,7 +184,11 @@ class _UpcomingPlansSection extends StatelessWidget {
   final bool isLoading;
   final VoidCallback onNavigateToPlans;
 
-  const _UpcomingPlansSection({required this.plans, required this.isLoading, required this.onNavigateToPlans});
+  const _UpcomingPlansSection({
+    required this.plans,
+    required this.isLoading,
+    required this.onNavigateToPlans,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -259,10 +257,7 @@ class _GroupsSection extends StatelessWidget {
     return Column(
       spacing: 8,
       mainAxisSize: MainAxisSize.max,
-      children: [
-        const _SectionHeader(),
-        _ActionButtons(),
-      ],
+      children: [const _SectionHeader(), _ActionButtons()],
     );
   }
 }
@@ -308,7 +303,7 @@ class _ActionButtons extends StatelessWidget {
               label: 'Add\nActivity',
               iconSize: 30,
               buttonIcon: Icons.edit_calendar_outlined,
-              pressAction: () {},
+              pressAction: () => context.push('/createplan'),
             ),
           ],
         ),
@@ -336,4 +331,3 @@ class _ActionButtons extends StatelessWidget {
     );
   }
 }
-
